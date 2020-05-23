@@ -1,9 +1,7 @@
 package paxel.lintstone.api;
 
 /**
- * This interface is used to send messages to an actor. The send message
- *
- * @author axel
+ * This interface is used to send messages to an actor.
  */
 public interface LintStoneActorAccess {
 
