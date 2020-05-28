@@ -29,18 +29,24 @@ public interface LintStoneSystem {
 
     /**
      * This will stop the executor in the system after all messages are
-     * processed. The method returns when all messsages are processed.
+     * processed.The method returns when all messsages are processed.
+     *
+     * @throws java.lang.InterruptedException in case the Thread is interrupted
+     * while shutting down.
      */
-    void shutDownAndWait();
+    void shutDownAndWait() throws InterruptedException;
 
     /**
      * This will stop the executor in the system after all messages are
      * processed.The method returns when all messsages are processed or the
      * timput duration has passed.
      *
-     * @param timeout {@code false} if the method returned because timeout.
+     * @param timeout the duration to wait
+     * @return {@code false} if the method returned because timeout.
+     * @throws java.lang.InterruptedException in case the Thread is interrupted
+     * while shutting down.
      */
-    boolean shutDownAndWait(Duration timeout);
+    boolean shutDownAndWait(Duration timeout) throws InterruptedException;
 
     /**
      * This immediately kills the executor.
@@ -54,7 +60,7 @@ public interface LintStoneSystem {
      * created it)
      *
      * @param name The actor to be removed.
-     * @return {@code} if the actor existed and was removed.
+     * @return {@code true} if the actor existed and was removed.
      */
     boolean unregisterActor(String name);
 }

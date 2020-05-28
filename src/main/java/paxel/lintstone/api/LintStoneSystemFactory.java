@@ -1,6 +1,6 @@
 package paxel.lintstone.api;
 
-import paxel.lintstone.impl.DefaultLintStoneSystem;
+import paxel.lintstone.impl.ActorSystem;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,7 +17,7 @@ public class LintStoneSystemFactory {
      * @return the LintStoneSystem.
      */
     public static LintStoneSystem create(ExecutorService executorService) {
-        return new DefaultLintStoneSystem(executorService);
+        return new ActorSystem(executorService);
     }
 
     /**
@@ -29,7 +29,7 @@ public class LintStoneSystemFactory {
      * @return the LintStoneSystem.
      */
     public static LintStoneSystem createLimitedThreadCount(int threads) {
-        return new DefaultLintStoneSystem(Executors.newFixedThreadPool(threads));
+        return new ActorSystem(Executors.newFixedThreadPool(threads));
     }
 
 }

@@ -1,6 +1,6 @@
 package paxel.lintstone.api;
 
-import java.util.function.Consumer;
+import java.util.Optional;
 
 /**
  * Represents the access to the message and the actor system for one message
@@ -26,16 +26,16 @@ public interface LintStoneMessageEventContext {
      * @param consumer The consumer of messages of the class.
      * @return the context itself
      */
-    <T> LintStoneMessageEventContext inCase(Class<T> clazz, Consumer<T> consumer);
+    <T> LintStoneMessageEventContext inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
 
     /**
      * Is executed if no
-     * {@link #inCase(java.lang.Class, java.util.function.Consumer)} was
-     * successfully executed before
+     * {@link #inCase(java.lang.Class, paxel.lintstone.api.LintStoneEventHandler) }
+     * was successfully executed before
      *
      * @param message The message
      */
-    void otherwise(Consumer<Object> message);
+    void otherwise(LintStoneEventHandler<Object> message);
 
     /**
      * Replies to the sender of the message. If the sender is no actor, the
@@ -79,5 +79,5 @@ public interface LintStoneMessageEventContext {
      * @param initMessage The init message.
      * @return The new or old actor access.
      */
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Object initMessage);
+    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
 }
