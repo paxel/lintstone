@@ -39,7 +39,7 @@ public interface LintStoneSystem {
     /**
      * This will stop the executor in the system after all messages are
      * processed.The method returns when all messsages are processed or the
-     * timput duration has passed.
+     * timeout duration has passed.
      *
      * @param timeout the duration to wait
      * @return {@code false} if the method returned because timeout.

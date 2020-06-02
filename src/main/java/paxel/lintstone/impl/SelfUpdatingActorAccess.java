@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import java.util.Optional;
 import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
@@ -22,16 +23,24 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
 
     @Override
     public void send(Object message) throws UnregisteredRecipientException {
+        tell(message, Optional.empty());
+    }
+
+    public void send(Object message, Optional<SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
+        tell(message, sender);
+    }
+
+    private void tell(Object message, Optional<SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
         }
         try {
-            actor.send(message);
+            actor.send(message, sender);
         } catch (UnregisteredRecipientException ignoredOnce) {
             actor = null;
             updateActor();
-            // second try throws the exception to the outside, in case the actore provided was already unregistered.
-            actor.send(message);
+            // second try throws ,the exception to the outside, in case the actore provided was already unregistered.
+            actor.send(message, sender);
         }
     }
 
