@@ -80,4 +80,11 @@ public interface LintStoneMessageEventContext {
      * @return The new or old actor access.
      */
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+
+    /**
+     * Unregisters this Actor.
+     *
+     * @return {@code true} if the actor was removed.
+     */
+    boolean unregister();
 }

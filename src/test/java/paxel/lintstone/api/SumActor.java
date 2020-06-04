@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 public class SumActor implements LintStoneActor {
 
     private Consumer<Long> result;
+    private String name;
 
     public SumActor(Consumer<Long> result) {
         this.result = result;
@@ -26,10 +27,13 @@ public class SumActor implements LintStoneActor {
         if (received == expected) {
             result.accept(sum);
         }
+        // Tell the actor, that he can unregister
+        mec.reply(new DieMessage());
     }
 
     private void incExpected(String name, LintStoneMessageEventContext mec) {
         expected++;
         System.out.println("Actor " + name + " registered");
     }
+
 }

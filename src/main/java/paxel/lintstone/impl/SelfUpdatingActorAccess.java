@@ -10,23 +10,21 @@ import paxel.lintstone.api.UnregisteredRecipientException;
  */
 public class SelfUpdatingActorAccess implements LintStoneActorAccess {
 
+    private final Optional<SelfUpdatingActorAccess> sender;
     private final String name;
     private final ActorSystem system;
     // not volatile as we expect to be used singlethreaded
     private Actor actor;
 
-    SelfUpdatingActorAccess(String name, Actor actor, ActorSystem system) {
+    SelfUpdatingActorAccess(String name, Actor actor, ActorSystem system, Optional<SelfUpdatingActorAccess> sender) {
         this.name = name;
         this.actor = actor;
         this.system = system;
+        this.sender = sender;
     }
 
     @Override
     public void send(Object message) throws UnregisteredRecipientException {
-        tell(message, Optional.empty());
-    }
-
-    public void send(Object message, Optional<SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
         tell(message, sender);
     }
 
@@ -56,6 +54,10 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
             actor = system.getActor(name).orElse(null);
         }
         return actor != null && actor.isValid();
+    }
+
+    String getName() {
+        return name;
     }
 
 }

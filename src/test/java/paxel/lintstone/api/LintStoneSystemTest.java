@@ -34,6 +34,8 @@ public class LintStoneSystemTest {
                 final LintStoneActorAccess actor = system.registerActor(name, AdderActor::new, Optional.empty());
                 // register the actor at the sum actor
                 sumActor.send(name);
+                // tell the adder his name.
+                actor.send(name);
                 return actor;
             })
                     // send the value to the actor
@@ -48,6 +50,8 @@ public class LintStoneSystemTest {
 
         // wait for the result
         latch.await();
+        boolean unregisterActor = system.unregisterActor("sumActor");
+        assertThat(unregisterActor, is(true));
         assertThat(result, is(4999950000L));
         system.shutDownAndWait(Duration.ofSeconds(5));
     }

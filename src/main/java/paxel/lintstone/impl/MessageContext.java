@@ -26,7 +26,7 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     @Override
     public <T> LintStoneMessageEventContext inCase(Class<T> clazz, LintStoneEventHandler<T> consumer) {
-        if (match || clazz.isAssignableFrom(message.getClass())) {
+        if (!match && clazz.isAssignableFrom(message.getClass())) {
             match = true;
             consumer.handle(clazz.cast(message), this);
         }
@@ -43,7 +43,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public void reply(Object msg) throws NoSenderException, UnregisteredRecipientException {
         sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
-                .send(msg, Optional.of(self));
+                .send(msg);
     }
 
     @Override
@@ -58,20 +58,22 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public LintStoneActorAccess getActor(String name) {
         // give a empty ref, that is filled on demand.
-        return new SelfUpdatingActorAccess(name, null, actorSystem);
+        return new SelfUpdatingActorAccess(name, null, actorSystem, Optional.of(self));
     }
 
     @Override
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        return actorSystem.registerActor(name, factory, initMessage);
+        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self));
     }
 
-    void setSender(Optional<SelfUpdatingActorAccess> sender) {
+    void init(Object message, Optional<SelfUpdatingActorAccess> sender) {
+        match = false;
+        this.message = message;
         this.sender = sender;
     }
 
-    void setMessage(Object message) {
-        this.message = message;
+    @Override
+    public boolean unregister() {
+        return actorSystem.unregisterActor(self.getName());
     }
-
 }

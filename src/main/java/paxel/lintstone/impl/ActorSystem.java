@@ -29,17 +29,23 @@ public class ActorSystem implements LintStoneSystem {
 
     @Override
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
+        Optional<SelfUpdatingActorAccess> sender = Optional.empty();
+        return registerActor(name, factory, initMessage, sender);
+    }
+
+    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
         synchronized (actors) {
             Actor existing = actors.get(name);
             if (existing != null) {
-                return new SelfUpdatingActorAccess(name, existing, this);
+                return new SelfUpdatingActorAccess(name, existing, this, sender);
             }
             LintStoneActor actorInstance = factory.create();
-            Actor newActor = new Actor(actorInstance, groupingExecutor.createMultiSourceSequentialProcessor(), new MessageContext(this, new SelfUpdatingActorAccess(name, null, this)));
+            Actor newActor = new Actor(name, actorInstance, groupingExecutor.createMultiSourceSequentialProcessor());
+            newActor.setMec(new MessageContext(this, new SelfUpdatingActorAccess(name, newActor, this, sender)));
             // actor receives the initMessage as first message.
             initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty()));
             actors.put(name, newActor);
-            return new SelfUpdatingActorAccess(name, newActor, this);
+            return new SelfUpdatingActorAccess(name, newActor, this, sender);
         }
     }
 

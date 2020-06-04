@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import paxel.bulkexecutor.SequentialProcessor;
 import paxel.lintstone.api.LintStoneActor;
-import paxel.lintstone.api.NoSenderException;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
 /**
@@ -12,15 +11,21 @@ import paxel.lintstone.api.UnregisteredRecipientException;
  */
 class Actor {
 
+    private final String name;
+
     private final LintStoneActor actorInstance;
     private final SequentialProcessor sequentialProcessor;
     private boolean registered = true;
-    private final MessageContext mec;
+    private MessageContext mec;
 
-    Actor(LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, MessageContext gmec) {
+    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor) {
+        this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
-        this.mec = gmec;
+    }
+
+    void setMec(MessageContext mec) {
+        this.mec = mec;
     }
 
     boolean isValid() {
@@ -30,10 +35,15 @@ class Actor {
     void send(Object message, Optional< SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
         sequentialProcessor.add(() -> {
             // update mec
-            mec.setMessage(message);
-            mec.setSender(sender);
+            mec.init(message, sender);
             // process message
-            actorInstance.newMessageEvent(mec);
+            try {
+                actorInstance.newMessageEvent(mec);
+            } catch (Exception e) {
+                sender.ifPresent(s -> {
+                    s.send(new FailedMessage(message, e, name));
+                });
+            }
             // TODO: catch exception. introduce errorhandler.
         });
     }
