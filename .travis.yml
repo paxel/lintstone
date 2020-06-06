@@ -1,0 +1,17 @@
+dist: trusty
+sudo: false
+language: java
+env:
+  global:
+addons:
+  apt:
+    packages:
+      - maven
+install:
+
+jdk:
+  - openjdk8
+script:
+  - mvn clean install
+  - mvn clean install -P benchmark
+
