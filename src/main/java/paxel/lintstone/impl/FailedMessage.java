@@ -2,9 +2,6 @@ package paxel.lintstone.impl;
 
 import paxel.lintstone.api.LintStoneFailedMessage;
 
-/**
- *
- */
 public class FailedMessage implements LintStoneFailedMessage {
 
     private final Object message;

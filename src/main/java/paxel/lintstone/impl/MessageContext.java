@@ -8,9 +8,6 @@ import paxel.lintstone.api.LintStoneMessageEventContext;
 import paxel.lintstone.api.NoSenderException;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
-/**
- *
- */
 public class MessageContext implements LintStoneMessageEventContext {
 
     private final ActorSystem actorSystem;
@@ -80,5 +77,10 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public String getName() {
         return self.getName();
+    }
+
+    @Override
+    public boolean unregister(String actorName) {
+        return actorSystem.unregisterActor(actorName);
     }
 }

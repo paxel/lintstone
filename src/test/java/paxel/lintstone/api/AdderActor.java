@@ -1,8 +1,5 @@
 package paxel.lintstone.api;
 
-/**
- *
- */
 public class AdderActor implements LintStoneActor {
 
     private long sum;

@@ -1,8 +1,5 @@
 package paxel.lintstone.api;
 
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -39,7 +36,9 @@ public class ReplyTest {
         assertThat(system.unregisterActor("Alex"), is(true));
         assertThat(system.unregisterActor("Uta"), is(true));
         assertThat(system.unregisterActor("floor"), is(true));
-        assertThat(system.shutDownAndWait(Duration.ofSeconds(5)), is(true));
+        //is it really removed?
+        assertThat(system.unregisterActor("floor"), is(false));
+        system.shutDown();
     }
 
     private static class FightActor implements LintStoneActor {
@@ -70,7 +69,7 @@ public class ReplyTest {
                 hp = hp - dmg;
                 if (hp < 0) {
                     System.out.println(m.getName() + " goes down");
-                    m.getActor("floor").send(m.getName());
+                    m.send("floor", m.getName());
                 } else if (hp < 15 && healthPotions > 0) {
                     heal(m);
                 } else {

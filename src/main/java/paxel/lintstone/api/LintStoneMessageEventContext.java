@@ -88,5 +88,19 @@ public interface LintStoneMessageEventContext {
      */
     boolean unregister();
 
+    /**
+     * Retrieve the name of this actor.
+     *
+     * @return the name
+     */
     public String getName();
+
+    /**
+     * Unregister some actor.
+     *
+     * @param actorName The actor to be unregistered.
+     * @return {@code true} if the actor was unregistered
+     */
+    boolean unregister(String actorName);
+
 }

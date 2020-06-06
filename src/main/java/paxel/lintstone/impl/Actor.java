@@ -6,11 +6,9 @@ import paxel.bulkexecutor.SequentialProcessor;
 import paxel.lintstone.api.LintStoneActor;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
-/**
- *
- */
 class Actor {
 
+    private static final Logger LOG = Logger.getLogger(Actor.class.getName());
     private final String name;
 
     private final LintStoneActor actorInstance;
@@ -32,7 +30,10 @@ class Actor {
         return registered == true;
     }
 
-    void send(Object message, Optional< SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
+    void send(Object message, Optional<SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
+        if (!registered) {
+            throw new UnregisteredRecipientException("Actor " + name + " is not registered");
+        }
         sequentialProcessor.add(() -> {
             // update mec
             mec.init(message, sender);
@@ -47,7 +48,6 @@ class Actor {
             // TODO: catch exception. introduce errorhandler.
         });
     }
-    private static final Logger LOG = Logger.getLogger(Actor.class.getName());
 
     void unregister() {
         registered = false;

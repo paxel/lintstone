@@ -13,9 +13,6 @@ import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.LintStoneActorFactory;
 import paxel.lintstone.api.LintStoneSystem;
 
-/**
- *
- */
 public class ActorSystem implements LintStoneSystem {
 
     private final Map<String, Actor> actors = Collections.synchronizedMap(new HashMap<>());
