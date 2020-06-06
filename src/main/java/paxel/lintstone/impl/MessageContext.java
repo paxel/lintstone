@@ -43,7 +43,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public void reply(Object msg) throws NoSenderException, UnregisteredRecipientException {
         sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
-                .send(msg);
+                .send(msg,self);
     }
 
     @Override

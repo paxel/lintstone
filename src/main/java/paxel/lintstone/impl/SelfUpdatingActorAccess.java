@@ -28,6 +28,10 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
         tell(message, sender);
     }
 
+    public void send(Object message, SelfUpdatingActorAccess sender) throws UnregisteredRecipientException {
+        tell(message, Optional.ofNullable(sender));
+    }
+
     private void tell(Object message, Optional<SelfUpdatingActorAccess> sender) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
