@@ -13,11 +13,11 @@ import paxel.lintstone.api.UnregisteredRecipientException;
  */
 public class MessageContext implements LintStoneMessageEventContext {
 
+    private final ActorSystem actorSystem;
+    private final SelfUpdatingActorAccess self;
     private Optional<SelfUpdatingActorAccess> sender;
     private Object message;
-    private final ActorSystem actorSystem;
     private boolean match;
-    private SelfUpdatingActorAccess self;
 
     public MessageContext(ActorSystem actorSystem, SelfUpdatingActorAccess self) {
         this.actorSystem = actorSystem;
@@ -43,7 +43,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public void reply(Object msg) throws NoSenderException, UnregisteredRecipientException {
         sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
-                .send(msg,self);
+                .send(msg, self);
     }
 
     @Override
@@ -75,5 +75,10 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public boolean unregister() {
         return actorSystem.unregisterActor(self.getName());
+    }
+
+    @Override
+    public String getName() {
+        return self.getName();
     }
 }

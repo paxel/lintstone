@@ -87,4 +87,6 @@ public interface LintStoneMessageEventContext {
      * @return {@code true} if the actor was removed.
      */
     boolean unregister();
+
+    public String getName();
 }
