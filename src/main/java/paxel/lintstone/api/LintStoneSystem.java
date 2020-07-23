@@ -11,14 +11,39 @@ public interface LintStoneSystem {
     /**
      * This checks if there is already an Actor with the given name, and if not
      * uses the {@link LintStoneActorFactory} to create one. The initMessage
-     * will be the first message the newly created actor will recieve.
+     * will be the first message the newly created actor will receive.
      *
-     * @param name The name of the actor. The name must be unique in the system.
-     * @param factory The factory to create the actor if not already exists.
+     * @param name        The name of the actor. The name must be unique in the system.
+     * @param factory     The factory to create the actor if not already exists.
+     * @param initMessage The optional init message.
+     * @return The {@link LintStoneActorAccess} object
+     */
+    LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+
+    /**
+     * This is the same method as {@link #registerMultiSourceActor(String, LintStoneActorFactory, Optional)}
+     *
+     * @param name        The name of the actor. The name must be unique in the system.
+     * @param factory     The factory to create the actor if not already exists.
      * @param initMessage The optional init message.
      * @return The {@link LintStoneActorAccess} object
      */
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+
+    /**
+     * This checks if there is already an Actor with the given name, and if not
+     * uses the {@link LintStoneActorFactory} to create one. The initMessage
+     * will be the first message the newly created actor will receive.
+     * <p>
+     * The resulting actor is a bit better performing than the one resulting from {@link #registerMultiSourceActor(String, LintStoneActorFactory, Optional)},
+     * but can only receive messages from a single thread.
+     *
+     * @param name        The name of the actor. The name must be unique in the system.
+     * @param factory     The factory to create the actor if not already exists.
+     * @param initMessage The optional init message.
+     * @return The {@link LintStoneActorAccess} object
+     */
+    LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
 
     /**
      * This will stop the executor in the system after all messages are
@@ -32,7 +57,7 @@ public interface LintStoneSystem {
      * processed.The method returns when all messsages are processed.
      *
      * @throws java.lang.InterruptedException in case the Thread is interrupted
-     * while shutting down.
+     *                                        while shutting down.
      */
     void shutDownAndWait() throws InterruptedException;
 
@@ -44,7 +69,7 @@ public interface LintStoneSystem {
      * @param timeout the duration to wait
      * @return {@code false} if the method returned because timeout.
      * @throws java.lang.InterruptedException in case the Thread is interrupted
-     * while shutting down.
+     *                                        while shutting down.
      */
     boolean shutDownAndWait(Duration timeout) throws InterruptedException;
 

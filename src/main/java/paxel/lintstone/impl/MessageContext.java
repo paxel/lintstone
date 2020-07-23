@@ -1,6 +1,7 @@
 package paxel.lintstone.impl;
 
 import java.util.Optional;
+
 import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.LintStoneActorFactory;
 import paxel.lintstone.api.LintStoneEventHandler;
@@ -61,6 +62,16 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
         return actorSystem.registerActor(name, factory, initMessage, Optional.of(self));
+    }
+
+    @Override
+    public LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
+        return actorSystem.registerMultiSourceActor(name, factory, initMessage, Optional.of(self));
+    }
+
+    @Override
+    public LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
+        return actorSystem.registerMultiSourceActor(name, factory, initMessage, Optional.of(self));
     }
 
     void init(Object message, Optional<SelfUpdatingActorAccess> sender) {

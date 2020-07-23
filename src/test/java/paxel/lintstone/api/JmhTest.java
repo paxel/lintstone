@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -113,10 +112,10 @@ public class JmhTest {
 
     private void run(int threads, int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
         CountDownLatch latch = new CountDownLatch(threads);
-        system.registerActor("END", () -> new EndActor(latch), Optional.empty());
+        system.registerMultiSourceActor("END", () -> new EndActor(latch), Optional.empty());
         List<LintStoneActorAccess> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
-            actors.add(system.registerActor(TEST + i, () -> new MessageActor(), Optional.empty()));
+            actors.add(system.registerMultiSourceActor(TEST + i, () -> new MessageActor(), Optional.empty()));
         }
         for (int i = 0; i < messages; i++) {
             actors.get(i % actorCount).send(i);

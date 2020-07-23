@@ -13,16 +13,15 @@ public interface LintStoneMessageEventContext {
      * an instance of the given class. Otherwise nothing happens. If any inCase
      * method matched, no other inCase method nor the otherwise method will be
      * executed.
-     *
+     * <p>
      * {@code mce.inCase(String.class, s-> println(s))}<br>
      * {@code    .inCase(Integer.class, this::add)}<br>
      * {@code    .otherWise(o->LOG.warning("Unknown type "+o.getClass());}<br>
-     *
+     * <p>
      * will either print the string, add the int or log the warning.
      *
-     *
-     * @param <T> The type of the class.
-     * @param clazz The class
+     * @param <T>      The type of the class.
+     * @param clazz    The class
      * @param consumer The consumer of messages of the class.
      * @return the context itself
      */
@@ -44,8 +43,8 @@ public interface LintStoneMessageEventContext {
      *
      * @param msg the message to reply.
      * @throws UnregisteredRecipientException if there is no actor with that
-     * name.
-     * @throws NoSenderException if there is no sender for the current message.
+     *                                        name.
+     * @throws NoSenderException              if there is no sender for the current message.
      */
     void reply(Object msg) throws NoSenderException, UnregisteredRecipientException;
 
@@ -53,9 +52,9 @@ public interface LintStoneMessageEventContext {
      * Sends the message to the actor with the registered name.
      *
      * @param name the name of the actor.
-     * @param msg The message to send.
+     * @param msg  The message to send.
      * @throws UnregisteredRecipientException if there is no actor with that
-     * name.
+     *                                        name.
      */
     void send(String name, Object msg) throws UnregisteredRecipientException;
 
@@ -72,14 +71,36 @@ public interface LintStoneMessageEventContext {
 
     /**
      * This method deleagtes to
-     * {@link LintStoneSystem#registerActor(java.lang.String, paxel.lintstone.api.LintStoneActorFactory, java.util.Optional)}.
+     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, Optional)}.
      *
-     * @param name The name of the actor.
-     * @param factory The factory.
+     * @param name        The name of the actor.
+     * @param factory     The factory.
      * @param initMessage The init message.
      * @return The new or old actor access.
      */
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+
+    /**
+     * This method deleagtes to
+     * {@link LintStoneSystem#registerSingleSourceActor(String, LintStoneActorFactory, Optional)}.
+     *
+     * @param name        The name of the actor.
+     * @param factory     The factory.
+     * @param initMessage The init message.
+     * @return The new or old actor access.
+     */
+    LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+
+    /**
+     * This method deleagtes to
+     * {@link LintStoneSystem#registerMultiSourceActor(java.lang.String, paxel.lintstone.api.LintStoneActorFactory, java.util.Optional)}.
+     *
+     * @param name        The name of the actor.
+     * @param factory     The factory.
+     * @param initMessage The init message.
+     * @return The new or old actor access.
+     */
+    LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
 
     /**
      * Unregisters this Actor.
