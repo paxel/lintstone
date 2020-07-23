@@ -1,6 +1,7 @@
 # lintstone
 There is no Thread Thlintstone. Lintstone is a simple actor framework. nough said.
 
+[![Build Status](https://travis-ci.org/paxel/lintstone.svg?branch=master)](https://travis-ci.org/paxel/lintstone)
 
 # How to use it?
 
