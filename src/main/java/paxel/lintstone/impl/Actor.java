@@ -1,7 +1,9 @@
 package paxel.lintstone.impl;
 
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import paxel.bulkexecutor.SequentialProcessor;
 import paxel.lintstone.api.LintStoneActor;
 import paxel.lintstone.api.UnregisteredRecipientException;
@@ -34,19 +36,24 @@ class Actor {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
-        sequentialProcessor.add(() -> {
+        boolean success = sequentialProcessor.add(() -> {
             // update mec
             mec.init(message, sender);
             // process message
             try {
                 actorInstance.newMessageEvent(mec);
             } catch (Exception e) {
-                sender.ifPresent(s -> {
-                    s.send(new FailedMessage(message, e, name));
-                });
+                if (sender.isPresent()) {
+                    sender.get().send(new FailedMessage(message, e, name));
+                } else {
+                    LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
+                }
             }
             // TODO: catch exception. introduce errorhandler.
         });
+        if (!success) {
+            throw new IllegalStateException("The sequential processor rejected the message.");
+        }
     }
 
     void unregister() {
