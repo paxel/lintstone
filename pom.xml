@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.paxel</groupId>
     <artifactId>lintstone</artifactId>
-    <version>0.9.6-SNAPSHOT</version>
+    <version>0.9.6</version>
 
     <name>LintStone - Actor System</name>
 
@@ -218,7 +217,7 @@
         <connection>scm:git:git://github.com/paxel/group-executor.git</connection>
         <developerConnection>scm:git:git@github.com:paxel/group-executor.git</developerConnection>
         <url>https://github.com/paxel/group-executor.git</url>
-        <tag>HEAD</tag>
+        <tag>lintstone-0.9.6</tag>
     </scm>
 
     <profiles>
@@ -251,7 +250,7 @@
                                     <executable>${java.home}/bin/java</executable>
                                     <arguments>
                                         <argument>-classpath</argument>
-                                        <classpath/>
+                                        <classpath />
                                         <argument>org.openjdk.jmh.Main</argument>
                                         <argument>.*</argument>
                                     </arguments>
