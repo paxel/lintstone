@@ -1,6 +1,7 @@
 package paxel.lintstone.impl;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.LintStoneActorFactory;
@@ -13,9 +14,9 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     private final ActorSystem actorSystem;
     private final SelfUpdatingActorAccess self;
-    private Optional<SelfUpdatingActorAccess> sender;
     private Object message;
     private boolean match;
+    private BiConsumer<Object, SelfUpdatingActorAccess> replyHandler;
 
     public MessageContext(ActorSystem actorSystem, SelfUpdatingActorAccess self) {
         this.actorSystem = actorSystem;
@@ -40,8 +41,7 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     @Override
     public void reply(Object msg) throws NoSenderException, UnregisteredRecipientException {
-        sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
-                .send(msg, self);
+        replyHandler.accept(msg, self);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (!actor.isPresent()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self));
+        actor.get().send(msg, Optional.of(self), null);
     }
 
     @Override
@@ -74,10 +74,10 @@ public class MessageContext implements LintStoneMessageEventContext {
         return actorSystem.registerMultiSourceActor(name, factory, initMessage, Optional.of(self));
     }
 
-    void init(Object message, Optional<SelfUpdatingActorAccess> sender) {
+    void init(Object message, BiConsumer<Object, SelfUpdatingActorAccess> replyHandler) {
+        this.replyHandler = replyHandler;
         match = false;
         this.message = message;
-        this.sender = sender;
     }
 
     @Override

@@ -13,7 +13,7 @@ public interface LintStoneActor {
      * invalid if the Actor with the given name is unregistered.
      *
      * @param mec The context, containing the message and access to the Actor
-     * system.
+     *            system.
      */
     void newMessageEvent(LintStoneMessageEventContext mec);
 }

@@ -1,5 +1,7 @@
 package paxel.lintstone.api;
 
+import java.util.function.Consumer;
+
 /**
  * This interface is used to send messages to an actor. This object should never
  * be used multithreaded unless synchronized externally.
@@ -28,4 +30,12 @@ public interface LintStoneActorAccess {
      */
     boolean exists();
 
+    /**
+     * Sends a message to the Actor represented by this Access. The response of the actor will then be processed by the
+     * given responseHandler.
+     *
+     * @param message The message to send.
+     * @throws UnregisteredRecipientException in case the actor does not exist.
+     */
+    void ask(Object message, Consumer<Object> responseHandler) throws UnregisteredRecipientException;
 }

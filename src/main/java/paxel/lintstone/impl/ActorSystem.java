@@ -66,7 +66,7 @@ public class ActorSystem implements LintStoneSystem {
             Actor newActor = new Actor(name, actorInstance, sequentialProcessor);
             newActor.setMec(new MessageContext(this, new SelfUpdatingActorAccess(name, newActor, this, sender)));
             // actor receives the initMessage as first message.
-            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty()));
+            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), null));
             actors.put(name, newActor);
             return new SelfUpdatingActorAccess(name, newActor, this, sender);
         }
