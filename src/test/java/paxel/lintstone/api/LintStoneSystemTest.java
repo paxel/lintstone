@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.*;
+
 import org.junit.Test;
 
 /**
@@ -29,15 +31,15 @@ public class LintStoneSystemTest {
         for (int i = 1; i < 100000; i++) {
             int m = i % 30;
             actors.computeIfAbsent(m, val -> {
-                // create a new actor on the fly
-                final String name = "addActor" + val;
-                final LintStoneActorAccess actor = system.registerMultiSourceActor(name, AdderActor::new, Optional.empty());
-                // register the actor at the sum actor
-                sumActor.send(name);
-                // tell the adder his name.
-                actor.send(name);
-                return actor;
-            })
+                        // create a new actor on the fly
+                        final String name = "addActor" + val;
+                        final LintStoneActorAccess actor = system.registerMultiSourceActor(name, AdderActor::new, Optional.empty());
+                        // register the actor at the sum actor
+                        sumActor.send(name);
+                        // tell the adder his name.
+                        actor.send(name);
+                        return actor;
+                    })
                     // send the value to the actor
                     .send(i);
         }

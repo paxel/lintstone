@@ -4,7 +4,7 @@ public class AdderActor implements LintStoneActor {
 
     private long sum;
     private String name;
-    private int last = -1;
+    private final int last = -1;
 
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {

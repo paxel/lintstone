@@ -1,11 +1,13 @@
 package paxel.lintstone.api;
 
+import org.junit.Test;
+
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.*;
 
 /**
  *

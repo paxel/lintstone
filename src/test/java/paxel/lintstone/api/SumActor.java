@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 public class SumActor implements LintStoneActor {
 
-    private Consumer<Long> result;
+    private final Consumer<Long> result;
     private String name;
 
     public SumActor(Consumer<Long> result) {

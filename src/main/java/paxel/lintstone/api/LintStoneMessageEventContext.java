@@ -114,7 +114,7 @@ public interface LintStoneMessageEventContext {
      *
      * @return the name
      */
-    public String getName();
+    String getName();
 
     /**
      * Unregister some actor.
