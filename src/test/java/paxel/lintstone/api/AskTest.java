@@ -36,9 +36,11 @@ public class AskTest {
         for (int i = 0; i < 1000; i++) {
             md5.send(ByteBuffer.wrap(new byte[i]));
         }
-        md5.ask(new EndMessage(), x -> {
-            result.set(String.valueOf(x));
-            latch.countDown();
+        md5.ask(new EndMessage(), mec -> {
+            mec.inCase(String.class, (x, m) -> {
+                result.set(String.valueOf(x));
+                latch.countDown();
+            });
         });
         // wait for the result
         latch.await();

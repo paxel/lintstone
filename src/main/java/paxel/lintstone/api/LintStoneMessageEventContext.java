@@ -92,7 +92,7 @@ public interface LintStoneMessageEventContext {
     LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
 
     /**
-     * This method deleagtes to
+     * This method delegates to
      * {@link LintStoneSystem#registerMultiSourceActor(java.lang.String, paxel.lintstone.api.LintStoneActorFactory, java.util.Optional)}.
      *
      * @param name        The name of the actor.

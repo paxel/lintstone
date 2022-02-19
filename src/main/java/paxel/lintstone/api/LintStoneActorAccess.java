@@ -1,5 +1,6 @@
 package paxel.lintstone.api;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -35,7 +36,8 @@ public interface LintStoneActorAccess {
      * given responseHandler.
      *
      * @param message The message to send.
+     * @param replyHandler The handler for the
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void ask(Object message, Consumer<Object> responseHandler) throws UnregisteredRecipientException;
+    void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException;
 }
