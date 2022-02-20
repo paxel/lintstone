@@ -35,8 +35,8 @@ public interface LintStoneActorAccess {
      * Sends a message to the Actor represented by this Access. The response of the actor will then be processed by the
      * given responseHandler.
      *
-     * @param message The message to send.
-     * @param replyHandler The handler for the
+     * @param message      The message to send.
+     * @param replyHandler The handler for the reply.
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
     void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException;

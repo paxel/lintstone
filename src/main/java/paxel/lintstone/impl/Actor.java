@@ -22,13 +22,13 @@ class Actor {
     private final LintStoneActor actorInstance;
     private final SequentialProcessor sequentialProcessor;
     private volatile boolean registered = true;
-    private final MessageContext mec;
+    private final MessageContextFactory messageContextFactory;
 
     Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, Optional<SelfUpdatingActorAccess> sender) {
         this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
-        mec = new MessageContext(system, new SelfUpdatingActorAccess(name, this, system, sender));
+        messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccess(name, this, system, sender));
     }
 
 
@@ -41,8 +41,8 @@ class Actor {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
         boolean success = sequentialProcessor.add(() -> {
-            // update mec and delegate replies to our handleReply method
-            mec.init(message, (msg, self) -> {
+            // create mec and delegate replies to our handleReply method
+            MessageContext mec = messageContextFactory.create(message, (msg, self) -> {
                 this.handleReply(msg, self, sender, replyHandler);
             });
             // process message
@@ -99,7 +99,7 @@ class Actor {
         }
         boolean success = sequentialProcessor.add(() -> {
             // we update the message context with the reply and give it to the reply handler
-            mec.init(reply, (msg, self) -> {
+            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> {
                 this.handleReply(msg, self, Optional.empty(), Optional.empty());
             });
             try {

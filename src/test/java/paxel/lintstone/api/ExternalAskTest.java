@@ -18,13 +18,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  *
  */
-public class AskTest {
+public class ExternalAskTest {
 
-    private static final Random R = new Random(0xbadbee);
     CountDownLatch latch = new CountDownLatch(1);
 
-    public AskTest() {
-    }
 
     @Test
     public void testAskExternal() throws InterruptedException {

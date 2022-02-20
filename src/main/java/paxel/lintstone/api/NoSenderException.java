@@ -6,6 +6,11 @@ package paxel.lintstone.api;
  */
 public class NoSenderException extends RuntimeException {
 
+    /**
+     * Construct an Exception.
+     *
+     * @param message The message.
+     */
     public NoSenderException(String message) {
         super(message);
     }

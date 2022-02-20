@@ -25,7 +25,7 @@ public interface LintStoneMessageEventContext {
      * @param consumer The consumer of messages of the class.
      * @return the context itself
      */
-    <T> LintStoneMessageEventContext inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
+    <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
 
     /**
      * Is executed if no
@@ -59,9 +59,21 @@ public interface LintStoneMessageEventContext {
     void send(String name, Object msg) throws UnregisteredRecipientException;
 
     /**
+     * Sends the message to the actor with the registered name.
+     * The replies of that actor are processed by the given Reply Handler in the thread context of this actor.
+     *
+     * @param name    the name of the actor.
+     * @param msg     The message to send.
+     * @param handler The reply handler.
+     * @throws UnregisteredRecipientException if there is no actor with that
+     *                                        name.
+     */
+    void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException;
+
+    /**
      * Retrieve the actor with given name. This method will always return an
      * object. Use the provided object to check if the actor exists by calling {@link  LintStoneActorAccess#exists()
-     * }. Please note, that the existance of the actor might change, and thus
+     * }. Please note, that the existence of the actor might change, and thus
      * the result of exists might change later.
      *
      * @param name The name of the actor.
