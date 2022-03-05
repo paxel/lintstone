@@ -44,6 +44,10 @@ public class ExternalAskTest {
 
         // this should be repeatable correct. because the messages are processed in correct order and the ask will be the last one
         assertThat(result.get(), is("993e7b2144d8c8a5cde9cf36463959e"));
+        assertThat(md5.getQueuedMessagesAndReplies(), is(0));
+        assertThat(md5.getProcessedMessages(), is(1002L)); //1 string 1000 byte 1 ask
+        assertThat(md5.getProcessedReplies(), is(1L)); // processed the ask reply for external call
+        System.out.println(system);
         system.shutDown();
     }
 

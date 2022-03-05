@@ -88,7 +88,23 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
         tell(message, sender, Optional.of(replyHandler));
     }
 
-    String getName() {
+    @Override
+    public int getQueuedMessagesAndReplies() {
+        return actor.getQueued();
+    }
+
+    @Override
+    public long getProcessedMessages() {
+        return actor.getTotalMessages();
+    }
+
+    @Override
+    public long getProcessedReplies() {
+        return actor.getTotalReplies();
+    }
+
+     @Override
+     public String getName() {
         return name;
     }
 

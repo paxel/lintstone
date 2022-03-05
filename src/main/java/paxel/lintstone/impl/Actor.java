@@ -7,6 +7,7 @@ import paxel.lintstone.api.ReplyHandler;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +23,8 @@ class Actor {
     private final LintStoneActor actorInstance;
     private final SequentialProcessor sequentialProcessor;
     private volatile boolean registered = true;
+    private final AtomicLong totalMessages = new AtomicLong();
+    private final AtomicLong totalReplies = new AtomicLong();
     private final MessageContextFactory messageContextFactory;
 
     Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, Optional<SelfUpdatingActorAccess> sender) {
@@ -60,6 +63,7 @@ class Actor {
         if (!success) {
             throw new IllegalStateException("The sequential processor rejected the message.");
         }
+        totalMessages.incrementAndGet();
     }
 
     /**
@@ -112,6 +116,28 @@ class Actor {
         if (!success) {
             throw new IllegalStateException("The sequential processor rejected the Runnable.");
         }
+        totalReplies.incrementAndGet();
+    }
 
+    @Override
+    public String toString() {
+        return "Actor{" +
+                "name='" + name + '\'' +
+                " registered='" + registered + '\'' +
+                " total='" + totalMessages.get() + '\'' +
+                " queued='" + sequentialProcessor.size() + '\'' +
+                '}';
+    }
+
+    public long getTotalMessages() {
+        return totalMessages.get();
+    }
+
+    public long getTotalReplies() {
+        return totalReplies.get();
+    }
+
+    public int getQueued() {
+        return sequentialProcessor.size();
     }
 }

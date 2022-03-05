@@ -113,4 +113,14 @@ public class ActorSystem implements LintStoneSystem {
             return Optional.ofNullable(actors.get(name));
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder("ActorSystem{");
+
+        actors.forEach((a, f) -> stringBuilder.append(f.toString()).append("\n"));
+        stringBuilder.append("}");
+
+        return stringBuilder.toString();
+    }
 }

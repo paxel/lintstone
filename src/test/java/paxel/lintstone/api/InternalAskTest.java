@@ -53,6 +53,9 @@ public class InternalAskTest {
 
         // this should be repeatable correct. because the messages are processed in correct order and the asks will be the last one
         assertThat(v, is("72 words, 403 letters, 15,am,antrag,auf,berlin,beschwörend,chef,choreographie,debatte,dem,denn,der,die,digitalen,doch,eigentlich,eine,einem,einen,einzelne,ende,es,fast,formulierungen,für,geht,generalsekretärin,hanau,hier,in,jusos,klingt,krönungsmesse,kurz,kutschaty,lüders,mehr,nach,nadja,parteitag,rassismus,sagt,samstagnachmittag,schon,sein,sie,sind,soll,spd,sprengen,stellen,taz,terroranschlag,thomas,uhr,um,und,viel,wahlparteitag,wir,zeitplan,zu,zwingen"));
+        assertThat(dist.getQueuedMessagesAndReplies(), is(0));
+        assertThat(dist.getProcessedMessages(), is(8L)); //7 Strings 1 ask
+        assertThat(dist.getProcessedReplies(), is(4L)); // processed the ask reply for external call and 3 replies of the other actors
         system.shutDown();
     }
 

@@ -59,7 +59,7 @@
         <dependency>
             <groupId>io.github.paxel</groupId>
             <artifactId>group-executor</artifactId>
-            <version>0.9.5</version>
+            <version>0.9.6</version>
         </dependency>
     </dependencies>
 
