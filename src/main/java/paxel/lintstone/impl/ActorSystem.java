@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import paxel.bulkexecutor.GroupingExecutor;
 import paxel.bulkexecutor.SequentialProcessor;
+import paxel.bulkexecutor.SequentialProcessorBuilder;
+import paxel.lintstone.api.ActorSettings;
 import paxel.lintstone.api.LintStoneActor;
 import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.LintStoneActorFactory;
@@ -27,33 +29,50 @@ public class ActorSystem implements LintStoneSystem {
     }
 
     @Override
+    @Deprecated
     public LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
         Optional<SelfUpdatingActorAccess> sender = Optional.empty();
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.createMultiSourceSequentialProcessor());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
     }
 
     @Override
+    @Deprecated
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
         return registerMultiSourceActor(name, factory, initMessage);
     }
 
     @Override
+    @Deprecated
     public LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
         Optional<SelfUpdatingActorAccess> sender = Optional.empty();
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.createSingleSourceSequentialProcessor());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
+    }
+
+    @Override
+    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
+        return registerActor(name, factory, initMessage, Optional.empty(), settings);
     }
 
 
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.createMultiSourceSequentialProcessor());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
+    }
+
+    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, ActorSettings settings) {
+        SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
+        sequentialProcessorBuilder.setMultiSource(settings.isMulti());
+        sequentialProcessorBuilder.setBatchSize(settings.getBatch());
+        sequentialProcessorBuilder.setLimited(settings.getLimit());
+        sequentialProcessorBuilder.setErrorHandler(settings.getErrorHandler());
+        return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
     }
 
     LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.createSingleSourceSequentialProcessor());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
     }
 
     LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.createMultiSourceSequentialProcessor());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
     }
 
     private LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, SequentialProcessor sequentialProcessor) {

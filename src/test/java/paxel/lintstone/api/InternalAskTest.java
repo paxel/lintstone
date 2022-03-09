@@ -35,10 +35,10 @@ public class InternalAskTest {
     @Test
     public void testAskExternal() throws InterruptedException, ExecutionException, TimeoutException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess dist = system.registerMultiSourceActor("dist", () -> new Distributor(), Optional.empty());
-        system.registerMultiSourceActor("wordCount", () -> new WordCount(), Optional.empty());
-        system.registerMultiSourceActor("charCount", () -> new CharCount(), Optional.empty());
-        system.registerMultiSourceActor("sorter", () -> new Sorter(), Optional.empty());
+        LintStoneActorAccess dist = system.registerActor("dist", () -> new Distributor(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        system.registerActor("wordCount", () -> new WordCount(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        system.registerActor("charCount", () -> new CharCount(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        system.registerActor("sorter", () -> new Sorter(), Optional.empty(), ActorSettings.create().setMulti(true).build());
 
         for (String text : data) {
             dist.send(text);

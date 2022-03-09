@@ -26,7 +26,7 @@ public class ExternalAskTest {
     @Test
     public void testAskExternal() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerMultiSourceActor("md5", () -> new Md5Actor(), Optional.empty());
+        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(), Optional.empty(), ActorSettings.create().setMulti(true).build());
 
         AtomicReference<String> result = new AtomicReference<>();
         md5.send("This is my test string");

@@ -24,12 +24,12 @@ public class FailingTests {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
-        LintStoneActorAccess stopper = system.registerMultiSourceActor("floor", () -> a -> latch.countDown(), Optional.empty());
-        LintStoneActorAccess lala = system.registerMultiSourceActor("lala", () -> new StupidActor(), Optional.of("Go"));
+        LintStoneActorAccess stopper = system.registerActor("floor", () -> a -> latch.countDown(), Optional.empty(),ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess lala = system.registerActor("lala", () -> new StupidActor(), Optional.of("Go"),ActorSettings.create().setMulti(true).build());
 
-        LintStoneActorAccess lulu = system.registerMultiSourceActor("lulu", () -> a -> {
+        LintStoneActorAccess lulu = system.registerActor("lulu", () -> a -> {
             a.reply("nope");
-        }, Optional.empty());
+        }, Optional.empty(),ActorSettings.create().setMulti(true).build());
 
         lulu.send("you ok?");
 
