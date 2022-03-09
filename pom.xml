@@ -5,7 +5,7 @@
 
     <groupId>io.github.paxel</groupId>
     <artifactId>lintstone</artifactId>
-    <version>0.9.8-SNAPSHOT</version>
+    <version>0.9.8</version>
 
     <name>LintStone - Actor System</name>
 
@@ -217,7 +217,7 @@
         <connection>scm:git:git://github.com/paxel/group-executor.git</connection>
         <developerConnection>scm:git:git@github.com:paxel/group-executor.git</developerConnection>
         <url>https://github.com/paxel/group-executor.git</url>
-        <tag>HEAD</tag>
+        <tag>lintstone-0.9.8</tag>
     </scm>
 
     <profiles>
