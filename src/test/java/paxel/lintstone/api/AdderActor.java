@@ -19,7 +19,7 @@ public class AdderActor implements LintStoneActor {
         if (last >= num) {
 
             // make sure that the order is correct
-            throw new IllegalStateException("Expected something bigger than " + last + " but got num");
+            throw new IllegalStateException("Expected something bigger than " + last + " but got "+num);
         }
         sum += num;
     }
@@ -34,7 +34,7 @@ public class AdderActor implements LintStoneActor {
 
     private void unregister(DieMessage msg, LintStoneMessageEventContext mec) {
         boolean unregister = mec.unregister();
-        System.out.println("Acter " + name + " unregistered: " + unregister);
+        System.out.println("Actor " + name + " unregistered: " + unregister);
     }
 
 }
