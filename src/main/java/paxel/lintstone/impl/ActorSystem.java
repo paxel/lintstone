@@ -63,6 +63,8 @@ public class ActorSystem implements LintStoneSystem {
         sequentialProcessorBuilder.setMultiSource(settings.isMulti());
         sequentialProcessorBuilder.setBatchSize(settings.getBatch());
         sequentialProcessorBuilder.setLimited(settings.getLimit());
+        sequentialProcessorBuilder.setLimited(settings.getLimit());
+        sequentialProcessorBuilder.setBlocking(settings.isBlocking());
         sequentialProcessorBuilder.setErrorHandler(settings.getErrorHandler());
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
     }

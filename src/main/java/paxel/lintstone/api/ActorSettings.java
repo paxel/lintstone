@@ -15,6 +15,13 @@ public interface ActorSettings {
     boolean isMulti();
 
     /**
+     * Defines if the send message to the actor should block until the limited queue has space for another message or if the message is ignored (and returned false.
+     *
+     * @return true if the send message should block until the message can be enqueued.
+     */
+    boolean isBlocking();
+
+    /**
      * The number of messages that should be processed by the actor in one batch.
      *
      * @return the batch size.
@@ -35,6 +42,11 @@ public interface ActorSettings {
      */
     ErrorHandler getErrorHandler();
 
+    /**
+     * Create a builder to build an implementation of the Settings.
+     *
+     * @return a builder.
+     */
     static ActorSettingsBuilder create() {
         return new ActorSettingsBuilder();
     }

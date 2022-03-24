@@ -4,8 +4,9 @@ import paxel.bulkexecutor.ErrorHandler;
 import paxel.lintstone.api.ActorSettings;
 
 public class ActorSettingsBuilder {
+    private boolean blocking;
     private int batch = 1;
-    private int limit = 0;
+    private int limit;
     private boolean multi = true;
     private ErrorHandler errorHandler = x -> true;
 
@@ -24,6 +25,15 @@ public class ActorSettingsBuilder {
 
     public ActorSettingsBuilder setBatch(int batch) {
         this.batch = batch;
+        return this;
+    }
+
+    public boolean isBlocking() {
+        return blocking;
+    }
+
+    public ActorSettingsBuilder setBlocking(boolean blocking) {
+        this.blocking = blocking;
         return this;
     }
 
@@ -46,6 +56,6 @@ public class ActorSettingsBuilder {
     }
 
     public ActorSettings build() {
-        return new ActorSettingsImpl(limit,multi,batch,errorHandler);
+        return new ActorSettingsImpl(limit,multi,batch,errorHandler, blocking);
     }
 }
