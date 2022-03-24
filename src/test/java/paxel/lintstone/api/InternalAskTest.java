@@ -40,6 +40,9 @@ public class InternalAskTest {
         system.registerActor("charCount", () -> new CharCount(), Optional.empty(), ActorSettings.create().setMulti(true).build());
         system.registerActor("sorter", () -> new Sorter(), Optional.empty(), ActorSettings.create().setMulti(true).build());
 
+        LintStoneSystem s = LintStoneSystemFactory.createLimitedThreadCount(5);
+        LintStoneActorAccess syncedOut = s.registerActor("out", () ->  mec -> mec.otherwise((o,m)->System.out.println(o)), Optional.empty(), ActorSettings.create().build());
+
         for (String text : data) {
             dist.send(text);
         }

@@ -103,9 +103,13 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
         return actor.getTotalReplies();
     }
 
-     @Override
-     public String getName() {
+    @Override
+    public String getName() {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(actor);
+    }
 }
