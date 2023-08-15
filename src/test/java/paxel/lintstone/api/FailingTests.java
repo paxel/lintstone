@@ -24,12 +24,12 @@ public class FailingTests {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
-        LintStoneActorAccess stopper = system.registerActor("floor", () -> a -> latch.countDown(), Optional.empty(),ActorSettings.create().setMulti(true).build());
-        LintStoneActorAccess lala = system.registerActor("lala", () -> new StupidActor(), Optional.of("Go"),ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess stopper = system.registerActor("floor", () -> a -> latch.countDown(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess lala = system.registerActor("lala", () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().setMulti(true).build());
 
         LintStoneActorAccess lulu = system.registerActor("lulu", () -> a -> {
             a.reply("nope");
-        }, Optional.empty(),ActorSettings.create().setMulti(true).build());
+        }, Optional.empty(), ActorSettings.create().setMulti(true).build());
 
         lulu.send("you ok?");
 
@@ -57,12 +57,12 @@ public class FailingTests {
         private void handleString(String go, LintStoneMessageEventContext mec) {
             LintStoneActorAccess registered = mec.registerActor("dala", () -> m -> {
                 throw new IllegalArgumentException("Go away");
-            }, Optional.empty());
+            }, Optional.empty(), ActorSettings.DEFAULT);
 
             if (registered.exists()) {
                 LintStoneActorAccess second = mec.registerActor("dala", () -> m -> {
                     System.out.print("I am ignored");
-                }, Optional.empty());
+                }, Optional.empty(), ActorSettings.DEFAULT);
 
                 if (second.exists()) {
                     // will fail on the other actor and produce a failed message for us.
@@ -106,14 +106,14 @@ public class FailingTests {
 
             LintStoneActorAccess oldActor = m.registerActor("someOne", () -> a -> {
 
-            }, Optional.empty());
+            }, Optional.empty(), ActorSettings.DEFAULT);
             oldActor.send("lala");
             // unregister that one
             if (m.unregister("someOne")) {
                 // register a new one
                 m.registerActor("someOne", () -> a -> {
 
-                }, Optional.empty());
+                }, Optional.empty(), ActorSettings.DEFAULT);
 
                 oldActor.send("works");
 

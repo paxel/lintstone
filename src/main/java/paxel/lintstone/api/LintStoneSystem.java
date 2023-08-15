@@ -8,45 +8,6 @@ import java.util.Optional;
  */
 public interface LintStoneSystem {
 
-    /**
-     * This checks if there is already an Actor with the given name, and if not
-     * uses the {@link LintStoneActorFactory} to create one. The initMessage
-     * will be the first message the newly created actor will receive.
-     *
-     * @param name        The name of the actor. The name must be unique in the system.
-     * @param factory     The factory to create the actor if not already exists.
-     * @param initMessage The optional init message.
-     * @return The {@link LintStoneActorAccess} object
-     */
-    @Deprecated
-    LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
-
-    /**
-     * This is the same method as {@link #registerMultiSourceActor(String, LintStoneActorFactory, Optional)}
-     *
-     * @param name        The name of the actor. The name must be unique in the system.
-     * @param factory     The factory to create the actor if not already exists.
-     * @param initMessage The optional init message.
-     * @return The {@link LintStoneActorAccess} object
-     */
-    @Deprecated
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
-
-    /**
-     * This checks if there is already an Actor with the given name, and if not
-     * uses the {@link LintStoneActorFactory} to create one. The initMessage
-     * will be the first message the newly created actor will receive.
-     * <p>
-     * The resulting actor is a bit better performing than the one resulting from {@link #registerMultiSourceActor(String, LintStoneActorFactory, Optional)},
-     * but can only receive messages from a single thread.
-     *
-     * @param name        The name of the actor. The name must be unique in the system.
-     * @param factory     The factory to create the actor if not already exists.
-     * @param initMessage The optional init message.
-     * @return The {@link LintStoneActorAccess} object
-     */
-    @Deprecated
-    LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
 
     /**
      * This generates and registers an Actor according to the given {@link ActorSettings}.

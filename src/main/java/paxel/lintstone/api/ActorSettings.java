@@ -6,6 +6,12 @@ import paxel.bulkexecutor.ErrorHandler;
  * The actor settings for the creation of configured actors.
  */
 public interface ActorSettings {
+
+    /**
+     * Non-blocking, unlimited and one by one processing Settings. Save but not optimal.
+     */
+    ActorSettings DEFAULT = ActorSettings.create().build();
+
     /**
      * Defines if the Actor receives messages from multiple sources.
      *

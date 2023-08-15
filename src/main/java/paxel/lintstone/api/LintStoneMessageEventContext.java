@@ -82,37 +82,15 @@ public interface LintStoneMessageEventContext {
     LintStoneActorAccess getActor(String name);
 
     /**
-     * This method deleagtes to
-     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, Optional)}.
-     *
-     * @param name        The name of the actor.
-     * @param factory     The factory.
-     * @param initMessage The init message.
-     * @return The new or old actor access.
-     */
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
-
-    /**
-     * This method deleagtes to
-     * {@link LintStoneSystem#registerSingleSourceActor(String, LintStoneActorFactory, Optional)}.
-     *
-     * @param name        The name of the actor.
-     * @param factory     The factory.
-     * @param initMessage The init message.
-     * @return The new or old actor access.
-     */
-    LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
-
-    /**
      * This method delegates to
-     * {@link LintStoneSystem#registerMultiSourceActor(java.lang.String, paxel.lintstone.api.LintStoneActorFactory, java.util.Optional)}.
+     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, Optional, ActorSettings)}.
      *
      * @param name        The name of the actor.
      * @param factory     The factory.
      * @param initMessage The init message.
      * @return The new or old actor access.
      */
-    LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage);
+    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings);
 
     /**
      * Unregisters this Actor.

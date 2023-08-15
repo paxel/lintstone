@@ -61,19 +61,13 @@ public class MessageContext implements LintStoneMessageEventContext {
         return new SelfUpdatingActorAccess(name, null, actorSystem, Optional.of(self));
     }
 
-    @Override
-    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self));
-    }
+
+
+
 
     @Override
-    public LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        return actorSystem.registerMultiSourceActor(name, factory, initMessage, Optional.of(self));
-    }
-
-    @Override
-    public LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        return actorSystem.registerMultiSourceActor(name, factory, initMessage, Optional.of(self));
+    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
+        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self),settings);
     }
 
     @Override

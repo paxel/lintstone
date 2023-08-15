@@ -28,25 +28,6 @@ public class ActorSystem implements LintStoneSystem {
         groupingExecutor = new GroupingExecutor(executorService);
     }
 
-    @Override
-    @Deprecated
-    public LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        Optional<SelfUpdatingActorAccess> sender = Optional.empty();
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
-    }
-
-    @Override
-    @Deprecated
-    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        return registerMultiSourceActor(name, factory, initMessage);
-    }
-
-    @Override
-    @Deprecated
-    public LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage) {
-        Optional<SelfUpdatingActorAccess> sender = Optional.empty();
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
-    }
 
     @Override
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
@@ -69,13 +50,6 @@ public class ActorSystem implements LintStoneSystem {
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
     }
 
-    LintStoneActorAccess registerSingleSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
-    }
-
-    LintStoneActorAccess registerMultiSourceActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
-    }
 
     private LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, SequentialProcessor sequentialProcessor) {
         synchronized (actors) {
