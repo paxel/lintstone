@@ -1,8 +1,5 @@
 package paxel.lintstone.api;
 
-import paxel.lintstone.impl.ActorSettingsBuilder;
-import paxel.lintstone.impl.SelfUpdatingActorAccess;
-
 import java.time.Duration;
 import java.util.Optional;
 
@@ -57,10 +54,11 @@ public interface LintStoneSystem {
      * @param name        The name of the actor. The name must be unique in the system.
      * @param factory     The factory to create the actor if not already exists.
      * @param initMessage The optional init message.
-     * @param settings The actor settings. Use {@link ActorSettings#create()} to create a builder and {@link ActorSettingsBuilder#build()} to build the instance.
+     * @param settings    The actor settings. Use {@link ActorSettings#create()} to create a builder and {@link ActorSettingsBuilder#build()} to build the instance.
      * @return The {@link LintStoneActorAccess} object
      */
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings);
+
     /**
      * This will stop the executor in the system after all messages are
      * processed. The method returns immediately. That does not mean, that all

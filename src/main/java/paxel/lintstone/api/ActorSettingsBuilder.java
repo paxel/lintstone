@@ -1,7 +1,7 @@
-package paxel.lintstone.impl;
+package paxel.lintstone.api;
 
 import paxel.bulkexecutor.ErrorHandler;
-import paxel.lintstone.api.ActorSettings;
+import paxel.lintstone.impl.ActorSettingsImpl;
 
 public class ActorSettingsBuilder {
     private boolean blocking;

@@ -1,7 +1,6 @@
 package paxel.lintstone.api;
 
 import paxel.bulkexecutor.ErrorHandler;
-import paxel.lintstone.impl.ActorSettingsBuilder;
 
 /**
  * The actor settings for the creation of configured actors.
