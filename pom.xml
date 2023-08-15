@@ -123,9 +123,9 @@
         </repository>
     </distributionManagement>
     <scm>
-        <connection>scm:git:git://github.com/paxel/group-executor.git</connection>
-        <developerConnection>scm:git:git@github.com:paxel/group-executor.git</developerConnection>
-        <url>https://github.com/paxel/group-executor.git</url>
+        <connection>scm:git:git://github.com/paxel/lintstone.git</connection>
+        <developerConnection>scm:git:git@github.com:paxel/lintstone.git</developerConnection>
+        <url>https://github.com/paxel/lintstone.git</url>
         <tag>HEAD</tag>
     </scm>
 
