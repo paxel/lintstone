@@ -1,6 +1,7 @@
 package paxel.lintstone.api;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Represents the access to the message and the actor system for one message
@@ -69,6 +70,20 @@ public interface LintStoneMessageEventContext {
      *                                        name.
      */
     void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException;
+
+    /**
+     * Sends the message to the actor with the registered name.
+     * The first reply will complete the resulting future in the context of this actor.
+     * If the replied type doesn't match the future it is completed exceptionally.
+     *
+     * @param name the name of the actor.
+     * @param msg  The message to send.
+     * @param <F>  the type of the future.
+     * @return the future result.
+     * @throws UnregisteredRecipientException if there is no actor with that
+     *                                        name.
+     */
+    <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException;
 
     /**
      * Retrieve the actor with given name. This method will always return an

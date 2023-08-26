@@ -1,5 +1,7 @@
 package paxel.lintstone.api;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * This interface is used to send messages to an actor. This object should never
  * be used multithreaded unless synchronized externally.
@@ -37,6 +39,17 @@ public interface LintStoneActorAccess {
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
     void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException;
+
+    /**
+     * A convenient {@link #ask(Object, ReplyHandler)} that returns and completes a {@link CompletableFuture} once, if the replied type is correct.
+     * Otherwise finishes exceptional with a {@link ClassCastException}
+     *
+     * @param message the Message for the actor
+     * @param <F>     The type of the expected reply
+     * @return The future result. It will be completed in the context of the asked actor.
+     * @throws UnregisteredRecipientException in case the actor does not exist.
+     */
+    <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException;
 
     /**
      * Retrieve the total amount of queued messages and replies of this actor.

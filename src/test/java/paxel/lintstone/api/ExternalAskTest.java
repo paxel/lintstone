@@ -9,9 +9,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -22,6 +25,43 @@ public class ExternalAskTest {
 
     CountDownLatch latch = new CountDownLatch(1);
 
+
+    @Test
+    public void testAskExternalFuture() throws InterruptedException, ExecutionException {
+        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
+        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+
+        md5.send("This is my test string");
+        for (int i = 0; i < 1000; i++) {
+            md5.send(ByteBuffer.wrap(new byte[i]));
+        }
+        String result = md5.<String>ask(new EndMessage()).get();
+
+        // this should be repeatable correct. because the messages are processed in correct order and the ask will be the last one
+        assertThat(result, is("993e7b2144d8c8a5cde9cf36463959e"));
+        assertThat(md5.getQueuedMessagesAndReplies(), is(0));
+        assertThat(md5.getProcessedMessages(), is(1002L)); //1 string 1000 byte 1 ask
+        assertThat(md5.getProcessedReplies(), is(1L)); // processed the ask reply for external call
+        System.out.println(system);
+        system.shutDown();
+    }
+
+    @Test
+    public void testAskExternalFutureTypeFail() throws InterruptedException, ExecutionException {
+        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
+        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+
+        md5.send("This is my test string");
+        for (int i = 0; i < 1000; i++) {
+            md5.send(ByteBuffer.wrap(new byte[i]));
+        }
+
+        // wrong type cast, but pit it in Object, to avoid ClassCastException
+        Object result = md5.<Integer>ask(new EndMessage()).get();
+
+        // was no integer
+        assertThat(result, is(instanceOf(String.class)));
+    }
 
     @Test
     public void testAskExternal() throws InterruptedException {

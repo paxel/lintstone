@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 public class FailingTests {
 
     private static final Random R = new Random(0xbadbee);
+    public static final String LULU = "lulu";
+    public static final String LALA = "lala";
+    public static final String STOP_ACTOR = "floor";
     CountDownLatch latch = new CountDownLatch(1);
 
     public FailingTests() {
@@ -24,10 +27,14 @@ public class FailingTests {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
-        LintStoneActorAccess stopper = system.registerActor("floor", () -> a -> latch.countDown(), Optional.empty(), ActorSettings.create().setMulti(true).build());
-        LintStoneActorAccess lala = system.registerActor("lala", () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().setMulti(true).build());
+        system.registerActor(STOP_ACTOR, () -> a -> {
+            latch.countDown();
+        }, Optional.empty(), ActorSettings.create().setMulti(true).build());
 
-        LintStoneActorAccess lulu = system.registerActor("lulu", () -> a -> {
+        // this is actually happening
+        system.registerActor(LALA, () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().setMulti(true).build());
+
+        LintStoneActorAccess lulu = system.registerActor(LULU, () -> a -> {
             a.reply("nope");
         }, Optional.empty(), ActorSettings.create().setMulti(true).build());
 
@@ -107,7 +114,7 @@ public class FailingTests {
             LintStoneActorAccess oldActor = m.registerActor("someOne", () -> a -> {
 
             }, Optional.empty(), ActorSettings.DEFAULT);
-            oldActor.send("lala");
+            oldActor.send("ho");
             // unregister that one
             if (m.unregister("someOne")) {
                 // register a new one
@@ -117,7 +124,7 @@ public class FailingTests {
 
                 oldActor.send("works");
 
-                m.getActor("floor").send("sztop");
+                m.getActor(STOP_ACTOR).send("sztop");
             }
         }
     }

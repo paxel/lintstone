@@ -1,10 +1,13 @@
 package paxel.lintstone.impl;
 
+import lombok.SneakyThrows;
 import paxel.lintstone.api.LintStoneActorAccess;
 import paxel.lintstone.api.ReplyHandler;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * This ActorAccess will try to fetch a new instance of an actor in case the
@@ -87,6 +90,22 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
         // replyHandler is required, therefore not Optional.ofNullable
         tell(message, sender, Optional.of(replyHandler));
     }
+
+    @Override
+    public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
+        CompletableFuture<F> result = new CompletableFuture<>();
+        tell(message, sender, Optional.of(mec -> {
+            mec.otherwise((reply, resultMec) -> {
+                try {
+                    result.complete((F) reply);
+                } catch (Exception e) {
+                    result.completeExceptionally(e);
+                }
+            });
+        }));
+        return result;
+    }
+
 
     @Override
     public int getQueuedMessagesAndReplies() {
