@@ -22,7 +22,7 @@ LintStoneSystem system = LintStoneSystemFactory.create(Executors.newCachedThread
 the system creates the actors
 
 ```java
-LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), Optional.empty());
+LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), Optional.empty(), ActorSettings.DEFAULT);
 ...
 fileCollector.send(FileCollector.fileMessage(root, readOnly));
 ```
@@ -52,7 +52,7 @@ The message is enqueued and eventually processed by the actor instance
         } else {
             fileData += length;
             final LintStoneActorAccess actor = actors.computeIfAbsent(length, k -> {
-                return m.registerActor("counter-" + length, () -> new FileComparator(length), Optional.empty());
+                return m.registerActor("counter-" + length, () -> new FileComparator(length), Optional.empty(), ActorSettings.DEFAULT);
             });
             actor.send(fileMessage(f, readOnly));
         }
@@ -72,18 +72,13 @@ If the asked actor responds to the message, the consumer is called with the resp
 This is a good way to get the result from the system in case of a multithreaded process.
 
 ```java
-CompletableFuture result = new CompletableFuture();
 
 for (String text : data) {
     dist.send(text);
 }
 
 //finally ask for result
-dist.ask(new EndMessage(), replyMec -> {
-    replyMec.inCase(String.class, (reply, ignored) -> {
-        result.complete(reply);
-    });
-});
 
-Object v = result.get(1, TimeUnit.MINUTES);
+String v = dist.<String>ask(new EndMessage())
+               .get(1, TimeUnit.MINUTES);
 ```

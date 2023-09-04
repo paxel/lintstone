@@ -112,10 +112,12 @@ public class JmhTest {
 
     private void run(int threads, int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
         CountDownLatch latch = new CountDownLatch(threads);
-        system.registerActor("END", () -> new EndActor(latch), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        system.registerActor("END", () -> new EndActor(latch), 
+                Optional.empty(), ActorSettings.create().build());
         List<LintStoneActorAccess> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
-            actors.add(system.registerActor(TEST + i, () -> new MessageActor(), Optional.empty(), ActorSettings.create().setMulti(true).build()));
+            actors.add(system.registerActor(TEST + i, () -> new MessageActor(), 
+                    Optional.empty(), ActorSettings.create().build()));
         }
         for (int i = 0; i < messages; i++) {
             actors.get(i % actorCount).send(i);

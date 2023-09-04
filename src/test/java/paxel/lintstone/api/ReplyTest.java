@@ -23,13 +23,15 @@ public class ReplyTest {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess alex = system.registerActor("Alex", () -> new FightActor(50, 1, 12, 0, 0), Optional.of("Uta"), ActorSettings.create().setMulti(true).build());
-        LintStoneActorAccess uta = system.registerActor("Uta", () -> new FightActor(40, 3, 4, 1, 1), Optional.of("Alex"), ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess alex = system.registerActor("Alex", () -> new FightActor(50, 1, 12, 0, 0),
+                Optional.of("Uta"), ActorSettings.create().build());
+        LintStoneActorAccess uta = system.registerActor("Uta", () -> new FightActor(40, 3, 4, 1, 1),
+                Optional.of("Alex"), ActorSettings.create().build());
         LintStoneActorAccess floor = system.registerActor("floor", () -> a -> {
             // someone died
             a.inCase(String.class, (n, mec) -> System.out.println(n + " lost"));
             latch.countDown();
-        }, Optional.empty(), ActorSettings.create().setMulti(true).build());
+        }, Optional.empty(), ActorSettings.create().build());
 
         uta.send(new StartMessage());
 

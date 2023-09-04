@@ -29,14 +29,14 @@ public class FailingTests {
         LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
         system.registerActor(STOP_ACTOR, () -> a -> {
             latch.countDown();
-        }, Optional.empty(), ActorSettings.create().setMulti(true).build());
+        }, Optional.empty(), ActorSettings.create().build());
 
         // this is actually happening
-        system.registerActor(LALA, () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().setMulti(true).build());
+        system.registerActor(LALA, () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().build());
 
         LintStoneActorAccess lulu = system.registerActor(LULU, () -> a -> {
             a.reply("nope");
-        }, Optional.empty(), ActorSettings.create().setMulti(true).build());
+        }, Optional.empty(), ActorSettings.create().build());
 
         lulu.send("you ok?");
 

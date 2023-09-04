@@ -12,19 +12,7 @@ public interface ActorSettings {
      */
     ActorSettings DEFAULT = ActorSettings.create().build();
 
-    /**
-     * Defines if the Actor receives messages from multiple sources.
-     *
-     * @return true if multiple sources send messages to the actor.
-     */
-    boolean isMulti();
 
-    /**
-     * Defines if the send message to the actor should block until the limited queue has space for another message or if the message is ignored (and returned false.
-     *
-     * @return true if the send message should block until the message can be enqueued.
-     */
-    boolean isBlocking();
 
     /**
      * The number of messages that should be processed by the actor in one batch.
@@ -33,12 +21,6 @@ public interface ActorSettings {
      */
     int getBatch();
 
-    /**
-     * The limit of the input queue of the actor.
-     *
-     * @return the limit.
-     */
-    int getLimit();
 
     /**
      * The handler for uncaught exceptions in the actor.

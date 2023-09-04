@@ -44,7 +44,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (!actor.isPresent()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), null);
+        actor.get().send(msg, Optional.of(self), null, null);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (!actor.isPresent()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), Optional.of(handler));
+        actor.get().send(msg, Optional.of(self), Optional.of(handler), null);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MessageContext implements LintStoneMessageEventContext {
                     result.completeExceptionally(e);
                 }
             });
-        }));
+        }), null);
         return result;
     }
 
