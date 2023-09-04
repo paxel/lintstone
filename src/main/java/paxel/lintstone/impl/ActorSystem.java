@@ -36,16 +36,12 @@ public class ActorSystem implements LintStoneSystem {
 
 
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().setMultiSource(true).build());
+        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
     }
 
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, ActorSettings settings) {
         SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
-        sequentialProcessorBuilder.setMultiSource(settings.isMulti());
         sequentialProcessorBuilder.setBatchSize(settings.getBatch());
-        sequentialProcessorBuilder.setLimited(settings.getLimit());
-        sequentialProcessorBuilder.setLimited(settings.getLimit());
-        sequentialProcessorBuilder.setBlocking(settings.isBlocking());
         sequentialProcessorBuilder.setErrorHandler(settings.getErrorHandler());
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
     }
@@ -60,7 +56,7 @@ public class ActorSystem implements LintStoneSystem {
             LintStoneActor actorInstance = factory.create();
             Actor newActor = new Actor(name, actorInstance, sequentialProcessor, this, sender);
             // actor receives the initMessage as first message.
-            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), null));
+            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), null, null));
             actors.put(name, newActor);
             return new SelfUpdatingActorAccess(name, newActor, this, sender);
         }

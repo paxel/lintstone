@@ -3,6 +3,7 @@ package paxel.lintstone.impl;
 import paxel.lintstone.api.*;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 /**
@@ -43,15 +44,35 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (!actor.isPresent()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), null);
+        actor.get().send(msg, Optional.of(self), null, null);
     }
 
+    @Override
     public void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getActor(name);
         if (!actor.isPresent()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), Optional.of(handler));
+        actor.get().send(msg, Optional.of(self), Optional.of(handler), null);
+    }
+
+    @Override
+    public <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException {
+        Optional<Actor> actor = actorSystem.getActor(name);
+        if (!actor.isPresent()) {
+            throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
+        }
+        CompletableFuture<F> result = new CompletableFuture<>();
+        actor.get().send(msg, Optional.of(self), Optional.of(mec -> {
+            mec.otherwise((m, o) -> {
+                try {
+                    result.complete((F) o);
+                } catch (Exception e) {
+                    result.completeExceptionally(e);
+                }
+            });
+        }), null);
+        return result;
     }
 
 
@@ -62,12 +83,9 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
 
-
-
-
     @Override
     public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
-        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self),settings);
+        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self), settings);
     }
 
     @Override

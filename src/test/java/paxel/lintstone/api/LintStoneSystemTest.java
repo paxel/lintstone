@@ -25,7 +25,7 @@ public class LintStoneSystemTest {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess sumActor = system.registerActor("sumActor", () -> new SumActor(this::result), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess sumActor = system.registerActor("sumActor", () -> new SumActor(this::result), Optional.empty(), ActorSettings.create().build());
 
         Map<Integer, LintStoneActorAccess> actors = new HashMap<>();
         for (int i = 1; i < 100000; i++) {
@@ -33,7 +33,7 @@ public class LintStoneSystemTest {
             actors.computeIfAbsent(m, val -> {
                         // create a new actor on the fly
                         final String name = "addActor" + val;
-                        final LintStoneActorAccess actor = system.registerActor(name, AdderActor::new, Optional.empty(), ActorSettings.create().setMulti(true).build());
+                        final LintStoneActorAccess actor = system.registerActor(name, AdderActor::new, Optional.empty(), ActorSettings.create().build());
                         // register the actor at the sum actor
                         sumActor.send(name);
                         // tell the adder his name.

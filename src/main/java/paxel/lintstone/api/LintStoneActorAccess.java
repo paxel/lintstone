@@ -1,5 +1,7 @@
 package paxel.lintstone.api;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * This interface is used to send messages to an actor. This object should never
  * be used multithreaded unless synchronized externally.
@@ -13,6 +15,16 @@ public interface LintStoneActorAccess {
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
     void send(Object message) throws UnregisteredRecipientException;
+
+    /**
+     * Sends a message to the Actor represented by this Access. But blocks the call until the number of messages queued
+     * is less than the given threshold. If someone else is sending messages to the actor, this call might block forever.
+     *
+     * @param message        The message to send-
+     * @param blockThreshold The number of queued messages that causes the call to block.
+     * @throws UnregisteredRecipientException in case the actor does not exist.
+     */
+    void sendWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException;
 
     /**
      * Retrieve if the actor is currently registered. using this does not ensure
@@ -37,6 +49,17 @@ public interface LintStoneActorAccess {
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
     void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException;
+
+    /**
+     * A convenient {@link #ask(Object, ReplyHandler)} that returns and completes a {@link CompletableFuture} once, if the replied type is correct.
+     * Otherwise finishes exceptional with a {@link ClassCastException}
+     *
+     * @param message the Message for the actor
+     * @param <F>     The type of the expected reply
+     * @return The future result. It will be completed in the context of the asked actor.
+     * @throws UnregisteredRecipientException in case the actor does not exist.
+     */
+    <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException;
 
     /**
      * Retrieve the total amount of queued messages and replies of this actor.

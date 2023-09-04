@@ -5,6 +5,7 @@ import paxel.lintstone.api.ReplyHandler;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This ActorAccess will try to fetch a new instance of an actor in case the
@@ -27,7 +28,12 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
 
     @Override
     public void send(Object message) throws UnregisteredRecipientException {
-        tell(message, sender, Optional.empty());
+        tell(message, sender, Optional.empty(), null);
+    }
+
+    @Override
+    public void sendWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
+        tell(message, sender, Optional.empty(),blockThreshold);
     }
 
     /**
@@ -51,20 +57,20 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
     }
 
     public void send(Object message, SelfUpdatingActorAccess sender) throws UnregisteredRecipientException {
-        tell(message, Optional.ofNullable(sender), Optional.empty());
+        tell(message, Optional.ofNullable(sender), Optional.empty(), null);
     }
 
-    private void tell(Object message, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler) throws UnregisteredRecipientException {
+    private void tell(Object message, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
         }
         try {
-            actor.send(message, sender, replyHandler);
+            actor.send(message, sender, replyHandler,blockThreshold);
         } catch (UnregisteredRecipientException ignoredOnce) {
             actor = null;
             updateActor();
             // second try throws ,the exception to the outside, in case the actore provided was already unregistered.
-            actor.send(message, sender, replyHandler);
+            actor.send(message, sender, replyHandler,blockThreshold);
         }
     }
 
@@ -85,8 +91,24 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
     @Override
     public void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         // replyHandler is required, therefore not Optional.ofNullable
-        tell(message, sender, Optional.of(replyHandler));
+        tell(message, sender, Optional.of(replyHandler),null);
     }
+
+    @Override
+    public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
+        CompletableFuture<F> result = new CompletableFuture<>();
+        tell(message, sender, Optional.of(mec -> {
+            mec.otherwise((reply, resultMec) -> {
+                try {
+                    result.complete((F) reply);
+                } catch (Exception e) {
+                    result.completeExceptionally(e);
+                }
+            });
+        }),null);
+        return result;
+    }
+
 
     @Override
     public int getQueuedMessagesAndReplies() {

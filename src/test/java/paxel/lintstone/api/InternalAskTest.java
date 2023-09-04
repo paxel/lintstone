@@ -37,10 +37,10 @@ public class InternalAskTest {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
         // the entry actor is limited to 1 message at the time input queue
         // just to test that the messages are added even so we send faster than the actor can process (creating backpressure)
-        LintStoneActorAccess dist = system.registerActor("dist", () -> new Distributor(), Optional.empty(), ActorSettings.create().setMulti(true).setLimit(1).setBlocking(true).build());
-        system.registerActor("wordCount", () -> new WordCount(), Optional.empty(), ActorSettings.create().setMulti(true).build());
-        system.registerActor("charCount", () -> new CharCount(), Optional.empty(), ActorSettings.create().setMulti(true).build());
-        system.registerActor("sorter", () -> new Sorter(), Optional.empty(), ActorSettings.create().setMulti(true).build());
+        LintStoneActorAccess dist = system.registerActor("dist", () -> new Distributor(), Optional.empty(), ActorSettings.create().build());
+        system.registerActor("wordCount", () -> new WordCount(), Optional.empty(), ActorSettings.create().build());
+        system.registerActor("charCount", () -> new CharCount(), Optional.empty(), ActorSettings.create().build());
+        system.registerActor("sorter", () -> new Sorter(), Optional.empty(), ActorSettings.create().build());
 
         LintStoneSystem s = LintStoneSystemFactory.createLimitedThreadCount(5);
         LintStoneActorAccess syncedOut = s.registerActor("out", () ->  mec -> mec.otherwise((o,m)->System.out.println(o)), Optional.empty(), ActorSettings.create().build());
