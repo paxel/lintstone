@@ -17,7 +17,7 @@ import org.junit.Test;
 public class LintStoneSystemTest {
 
     private Long result;
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
     public LintStoneSystemTest() {
     }

@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.*;
 public class ReplyTest {
 
     private static final Random R = new Random(0xbadbee);
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
     public ReplyTest() {
     }
@@ -67,9 +67,7 @@ public class ReplyTest {
             mec.inCase(String.class, (name, m) -> {
                 this.nme = m.getActor(name);
                 System.out.println(m.getName() + " challenges " + name);
-            }).inCase(StartMessage.class, (ignore, m) -> {
-                attack(m);
-            }).inCase(Integer.class, (dmg, m) -> {
+            }).inCase(StartMessage.class, (ignore, m) -> attack(m)).inCase(Integer.class, (dmg, m) -> {
                 hp = hp - dmg;
                 if (hp < 0) {
                     System.out.println(m.getName() + " goes down");

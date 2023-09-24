@@ -21,9 +21,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 // only fork 1 JVM per benchmark
 @Fork(1)
 // 5 times 2 second warmup per benchmark
-@Warmup(iterations = 5, time = 10, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 10)
 // 5 times 2 second measurment per benchmark
-@Measurement(iterations = 5, time = 10, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 10)
 // in micros
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class JmhTest {
@@ -116,7 +116,7 @@ public class JmhTest {
                 Optional.empty(), ActorSettings.create().build());
         List<LintStoneActorAccess> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
-            actors.add(system.registerActor(TEST + i, () -> new MessageActor(), 
+            actors.add(system.registerActor(TEST + i, MessageActor::new,
                     Optional.empty(), ActorSettings.create().build()));
         }
         for (int i = 0; i < messages; i++) {
@@ -174,9 +174,7 @@ public class JmhTest {
                 b.send(a, sum);
                 // and kill yourself
                 b.unregister();
-            }).otherwise((a, b) -> {
-                System.err.println("unknown message: " + a);
-            });
+            }).otherwise((a, b) -> System.err.println("unknown message: " + a));
         }
     }
 

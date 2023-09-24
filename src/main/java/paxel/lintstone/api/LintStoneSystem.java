@@ -18,7 +18,7 @@ public interface LintStoneSystem {
      * @param settings    The actor settings. Use {@link ActorSettings#create()} to create a builder and {@link ActorSettingsBuilder#build()} to build the instance.
      * @return The {@link LintStoneActorAccess} object
      */
-    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings);
+    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings);
 
     /**
      * This will stop the executor in the system after all messages are
@@ -42,11 +42,10 @@ public interface LintStoneSystem {
      * timeout duration has passed.
      *
      * @param timeout the duration to wait
-     * @return {@code false} if the method returned because timeout.
      * @throws java.lang.InterruptedException in case the Thread is interrupted
      *                                        while shutting down.
      */
-    boolean shutDownAndWait(Duration timeout) throws InterruptedException;
+    void shutDownAndWait(Duration timeout) throws InterruptedException;
 
     /**
      * This immediately kills the executor.

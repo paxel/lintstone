@@ -18,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class InternalAskTest {
 
-    CompletableFuture result = new CompletableFuture();
+    final CompletableFuture result = new CompletableFuture();
     private final static String[] data = {
             "BERLIN taz Wir sind hier auf einem Wahlparteitag sagt Nadja Lüders ",
             "SPD Generalsekretärin kurz nach 15 Uhr am Samstagnachmittag ",
@@ -37,10 +37,10 @@ public class InternalAskTest {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
         // the entry actor is limited to 1 message at the time input queue
         // just to test that the messages are added even so we send faster than the actor can process (creating backpressure)
-        LintStoneActorAccess dist = system.registerActor("dist", () -> new Distributor(), Optional.empty(), ActorSettings.create().build());
-        system.registerActor("wordCount", () -> new WordCount(), Optional.empty(), ActorSettings.create().build());
-        system.registerActor("charCount", () -> new CharCount(), Optional.empty(), ActorSettings.create().build());
-        system.registerActor("sorter", () -> new Sorter(), Optional.empty(), ActorSettings.create().build());
+        LintStoneActorAccess dist = system.registerActor("dist", Distributor::new, Optional.empty(), ActorSettings.create().build());
+        system.registerActor("wordCount", WordCount::new, Optional.empty(), ActorSettings.create().build());
+        system.registerActor("charCount", CharCount::new, Optional.empty(), ActorSettings.create().build());
+        system.registerActor("sorter", Sorter::new, Optional.empty(), ActorSettings.create().build());
 
         LintStoneSystem s = LintStoneSystemFactory.createLimitedThreadCount(5);
         LintStoneActorAccess syncedOut = s.registerActor("out", () ->  mec -> mec.otherwise((o,m)->System.out.println(o)), Optional.empty(), ActorSettings.create().build());
@@ -48,11 +48,9 @@ public class InternalAskTest {
         for (String text : data) {
             dist.send(text);
         }
-        dist.ask(new EndMessage(), replyMec -> {
-            replyMec.inCase(String.class, (reply, ignored) -> {
-                result.complete(reply);
-            });
-        });
+        dist.ask(new EndMessage(), replyMec -> replyMec.inCase(String.class, (reply, ignored) -> {
+            result.complete(reply);
+        }));
 
         Object v = result.get(1, TimeUnit.MINUTES);
 
@@ -68,9 +66,7 @@ public class InternalAskTest {
     private static class Distributor implements LintStoneActor {
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> {
-                this.send(txt, m);
-            }).inCase(EndMessage.class, (dmg, askContext) -> {
+            mec.inCase(String.class, this::send).inCase(EndMessage.class, (dmg, askContext) -> {
                 CompletableFuture<Integer> words = new CompletableFuture<>();
                 CompletableFuture<Integer> chars = new CompletableFuture<>();
                 CompletableFuture<String> sort = new CompletableFuture<>();
@@ -105,7 +101,7 @@ public class InternalAskTest {
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
             mec.inCase(String.class, (txt, m) -> {
-                int length = (int) Arrays.asList(txt.trim().split(" ")).stream().filter(f->!f.trim().isEmpty()).count();
+                int length = (int) Arrays.stream(txt.trim().split(" ")).filter(f->!f.trim().isEmpty()).count();
                 this.count += length;
             }).inCase(EndMessage.class, (dmg, askContext) -> {
                 askContext.reply(count);
@@ -119,9 +115,7 @@ public class InternalAskTest {
 
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> {
-                this.count += txt.replaceAll(" ", "").length();
-            }).inCase(EndMessage.class, (dmg, askContext) -> {
+            mec.inCase(String.class, (txt, m) -> this.count += txt.replaceAll(" ", "").length()).inCase(EndMessage.class, (dmg, askContext) -> {
                 askContext.reply(count);
                 askContext.unregister();
             });
@@ -129,16 +123,14 @@ public class InternalAskTest {
     }
 
     private static class Sorter implements LintStoneActor {
-        Set<String> words = new HashSet<>();
+        final Set<String> words = new HashSet<>();
 
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> {
-                words.addAll(Arrays.asList(txt.trim().split(" ")).stream().filter(f->!f.trim().isEmpty()).map(String::toLowerCase).collect(Collectors.toList()));
-            }).inCase(EndMessage.class, (dmg, askContext) -> {
+            mec.inCase(String.class, (txt, m) -> words.addAll(Arrays.asList(txt.trim().split(" ")).stream().filter(f->!f.trim().isEmpty()).map(String::toLowerCase).collect(Collectors.toList()))).inCase(EndMessage.class, (dmg, askContext) -> {
                 ArrayList<String> list = new ArrayList<>(words);
                 Collections.sort(list);
-                askContext.reply(list.stream().collect(Collectors.joining(",")));
+                askContext.reply(String.join(",", list));
             });
         }
     }

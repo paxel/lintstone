@@ -56,7 +56,7 @@ public class ActorSystem implements LintStoneSystem {
             LintStoneActor actorInstance = factory.create();
             Actor newActor = new Actor(name, actorInstance, sequentialProcessor, this, sender);
             // actor receives the initMessage as first message.
-            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), null, null));
+            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), Optional.empty(), null));
             actors.put(name, newActor);
             return new SelfUpdatingActorAccess(name, newActor, this, sender);
         }
@@ -75,9 +75,9 @@ public class ActorSystem implements LintStoneSystem {
     }
 
     @Override
-    public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
+    public void shutDownAndWait(Duration timeout) throws InterruptedException {
         executorService.shutdown();
-        return executorService.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
+        executorService.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override

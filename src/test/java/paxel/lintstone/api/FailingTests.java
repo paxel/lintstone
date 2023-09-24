@@ -19,7 +19,7 @@ public class FailingTests {
     public static final String LULU = "lulu";
     public static final String LALA = "lala";
     public static final String STOP_ACTOR = "floor";
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
     public FailingTests() {
     }
@@ -27,16 +27,12 @@ public class FailingTests {
     @Test
     public void testSomeMethod() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
-        system.registerActor(STOP_ACTOR, () -> a -> {
-            latch.countDown();
-        }, Optional.empty(), ActorSettings.create().build());
+        system.registerActor(STOP_ACTOR, () -> a -> latch.countDown(), Optional.empty(), ActorSettings.create().build());
 
         // this is actually happening
-        system.registerActor(LALA, () -> new StupidActor(), Optional.of("Go"), ActorSettings.create().build());
+        system.registerActor(LALA, StupidActor::new, Optional.of("Go"), ActorSettings.create().build());
 
-        LintStoneActorAccess lulu = system.registerActor(LULU, () -> a -> {
-            a.reply("nope");
-        }, Optional.empty(), ActorSettings.create().build());
+        LintStoneActorAccess lulu = system.registerActor(LULU, () -> a -> a.reply("nope"), Optional.empty(), ActorSettings.create().build());
 
         lulu.send("you ok?");
 
@@ -54,11 +50,9 @@ public class FailingTests {
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
             mec
-                    .inCase(String.class, (go, m) -> this.handleString(go, m))
-                    .inCase(FailedMessage.class, (go, m) -> this.handleString(go, m))
-                    .otherwise((o, m) -> {
-                        System.out.println("otherwise: " + o);
-                    });
+                    .inCase(String.class, this::handleString)
+                    .inCase(FailedMessage.class, this::handleString)
+                    .otherwise((o, m) -> System.out.println("otherwise: " + o));
         }
 
         private void handleString(String go, LintStoneMessageEventContext mec) {
@@ -67,9 +61,7 @@ public class FailingTests {
             }, Optional.empty(), ActorSettings.DEFAULT);
 
             if (registered.exists()) {
-                LintStoneActorAccess second = mec.registerActor("dala", () -> m -> {
-                    System.out.print("I am ignored");
-                }, Optional.empty(), ActorSettings.DEFAULT);
+                LintStoneActorAccess second = mec.registerActor("dala", () -> m -> System.out.print("I am ignored"), Optional.empty(), ActorSettings.DEFAULT);
 
                 if (second.exists()) {
                     // will fail on the other actor and produce a failed message for us.

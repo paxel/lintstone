@@ -41,16 +41,16 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public void send(String name, Object msg) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getActor(name);
-        if (!actor.isPresent()) {
+        if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), null, null);
+        actor.get().send(msg, Optional.of(self), Optional.empty(), null);
     }
 
     @Override
     public void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getActor(name);
-        if (!actor.isPresent()) {
+        if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
         actor.get().send(msg, Optional.of(self), Optional.of(handler), null);
@@ -59,19 +59,17 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getActor(name);
-        if (!actor.isPresent()) {
+        if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
         CompletableFuture<F> result = new CompletableFuture<>();
-        actor.get().send(msg, Optional.of(self), Optional.of(mec -> {
-            mec.otherwise((m, o) -> {
-                try {
-                    result.complete((F) o);
-                } catch (Exception e) {
-                    result.completeExceptionally(e);
-                }
-            });
-        }), null);
+        actor.get().send(msg, Optional.of(self), Optional.of(mec -> mec.otherwise((m, o) -> {
+            try {
+                result.complete((F) o);
+            } catch (Exception e) {
+                result.completeExceptionally(e);
+            }
+        })), null);
         return result;
     }
 

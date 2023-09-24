@@ -36,7 +36,7 @@ class Actor {
 
 
     boolean isValid() {
-        return registered == true;
+        return registered;
     }
 
     void send(Object message, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
@@ -47,9 +47,7 @@ class Actor {
 
         Runnable runnable = () -> {
             // create mec and delegate replies to our handleReply method
-            MessageContext mec = messageContextFactory.create(message, (msg, self) -> {
-                this.handleReply(msg, self, sender, replyHandler);
-            });
+            MessageContext mec = messageContextFactory.create(message, (msg, self) -> this.handleReply(msg, self, sender, replyHandler));
             // process message
             try {
                 actorInstance.newMessageEvent(mec);
@@ -86,7 +84,7 @@ class Actor {
      *                     All reply during the handling of an ask are delegated to the replyHandler.
      */
     private void handleReply(Object reply, SelfUpdatingActorAccess self, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler) {
-        if (!replyHandler.isPresent()) {
+        if (replyHandler.isEmpty()) {
             // we don't have to handle this other than just sending it to the sender of the original message.
             sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
                     .send(reply, self);
@@ -111,9 +109,7 @@ class Actor {
         }
         boolean success = sequentialProcessor.add(() -> {
             // we update the message context with the reply and give it to the reply handler
-            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> {
-                this.handleReply(msg, self, Optional.empty(), Optional.empty());
-            });
+            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> this.handleReply(msg, self, Optional.empty(), Optional.empty()));
             try {
                 replyHandler.process(mec);
             } catch (Exception e) {

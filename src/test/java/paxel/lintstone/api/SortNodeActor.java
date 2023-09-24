@@ -55,7 +55,7 @@ public class SortNodeActor implements LintStoneActor {
     }
 
     private void add(Long value, LintStoneMessageEventContext lintStoneMessageEventContext) {
-        if (this.value == null || this.value == value)
+        if (this.value == null || this.value.equals(value))
             // first value that we receive // same value received
             this.value = value;
         else if (this.value > value) {

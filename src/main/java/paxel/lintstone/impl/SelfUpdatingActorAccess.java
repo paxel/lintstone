@@ -97,15 +97,13 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
     @Override
     public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
         CompletableFuture<F> result = new CompletableFuture<>();
-        tell(message, sender, Optional.of(mec -> {
-            mec.otherwise((reply, resultMec) -> {
-                try {
-                    result.complete((F) reply);
-                } catch (Exception e) {
-                    result.completeExceptionally(e);
-                }
-            });
-        }),null);
+        tell(message, sender, Optional.of(mec -> mec.otherwise((reply, resultMec) -> {
+            try {
+                result.complete((F) reply);
+            } catch (Exception e) {
+                result.completeExceptionally(e);
+            }
+        })),null);
         return result;
     }
 

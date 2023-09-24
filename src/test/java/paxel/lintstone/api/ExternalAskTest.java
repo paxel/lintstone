@@ -8,8 +8,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,13 +21,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ExternalAskTest {
 
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
 
     @Test
     public void testAskExternalFuture() throws InterruptedException, ExecutionException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(),
+        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
                 Optional.empty(), ActorSettings.create().build());
 
         md5.send("This is my test string");
@@ -50,7 +48,7 @@ public class ExternalAskTest {
     @Test
     public void testAskExternalFutureTypeFail() throws InterruptedException, ExecutionException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(),
+        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
                 Optional.empty(), ActorSettings.create().build());
 
         md5.send("This is my test string");
@@ -68,7 +66,7 @@ public class ExternalAskTest {
     @Test
     public void testAskExternal() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", () -> new Md5Actor(),
+        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
                 Optional.empty(), ActorSettings.create().build());
 
         AtomicReference<String> result = new AtomicReference<>();
@@ -76,12 +74,10 @@ public class ExternalAskTest {
         for (int i = 0; i < 1000; i++) {
             md5.send(ByteBuffer.wrap(new byte[i]));
         }
-        md5.ask(new EndMessage(), mec -> {
-            mec.inCase(String.class, (x, m) -> {
-                result.set(String.valueOf(x));
-                latch.countDown();
-            });
-        });
+        md5.ask(new EndMessage(), mec -> mec.inCase(String.class, (x, m) -> {
+            result.set(String.valueOf(x));
+            latch.countDown();
+        }));
         // wait for the result
         latch.await();
 
@@ -99,9 +95,7 @@ public class ExternalAskTest {
 
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (name, m) -> {
-                this.add(name.getBytes(StandardCharsets.UTF_8));
-            }).inCase(ByteBuffer.class, (byteBuffer, m) -> {
+            mec.inCase(String.class, (name, m) -> this.add(name.getBytes(StandardCharsets.UTF_8))).inCase(ByteBuffer.class, (byteBuffer, m) -> {
                 if (byteBuffer.hasArray())
                     add(byteBuffer.array());
             }).inCase(EndMessage.class, (dmg, m) -> {

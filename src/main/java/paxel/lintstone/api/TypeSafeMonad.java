@@ -4,7 +4,7 @@ package paxel.lintstone.api;
  * This class provides access to the message or the reply.
  */
 public class TypeSafeMonad {
-    private static TypeSafeMonad DONE = new TypeSafeMonad(null, null) {
+    private static final TypeSafeMonad DONE = new TypeSafeMonad(null, null) {
         @Override
         public <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
             return this;

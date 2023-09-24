@@ -4,7 +4,6 @@ public class AdderActor implements LintStoneActor {
 
     private long sum;
     private String name;
-    private final int last = -1;
 
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {
@@ -16,6 +15,7 @@ public class AdderActor implements LintStoneActor {
     }
 
     private void addInteger(Integer num, LintStoneMessageEventContext mec) {
+        int last = -1;
         if (last >= num) {
 
             // make sure that the order is correct
