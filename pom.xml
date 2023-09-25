@@ -5,7 +5,7 @@
 
     <groupId>io.github.paxel</groupId>
     <artifactId>lintstone-java8</artifactId>
-    <version>0.12.1-SNAPSHOT</version>
+    <version>0.12.1</version>
 
     <name>LintStone - Actor System</name>
 
@@ -150,7 +150,7 @@
         <connection>scm:git:git://github.com/paxel/lintstone.git</connection>
         <developerConnection>scm:git:git@github.com:paxel/lintstone.git</developerConnection>
         <url>https://github.com/paxel/lintstone.git</url>
-        <tag>HEAD</tag>
+        <tag>lintstone-java8-0.12.1</tag>
     </scm>
 
     <profiles>
