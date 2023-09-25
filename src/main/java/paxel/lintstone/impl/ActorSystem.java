@@ -75,9 +75,9 @@ public class ActorSystem implements LintStoneSystem {
     }
 
     @Override
-    public void shutDownAndWait(Duration timeout) throws InterruptedException {
+    public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
         executorService.shutdown();
-        executorService.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
+       return executorService.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override

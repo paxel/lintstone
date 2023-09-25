@@ -42,10 +42,11 @@ public interface LintStoneSystem {
      * timeout duration has passed.
      *
      * @param timeout the duration to wait
+     * @return {@code true} if shutdown happened before the timeout.
      * @throws java.lang.InterruptedException in case the Thread is interrupted
      *                                        while shutting down.
      */
-    void shutDownAndWait(Duration timeout) throws InterruptedException;
+    boolean shutDownAndWait(Duration timeout) throws InterruptedException;
 
     /**
      * This immediately kills the executor.

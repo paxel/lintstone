@@ -5,7 +5,7 @@ package paxel.lintstone.api;
  * implement it for each message type it wants to process and delegate the
  * function to the context. The context is given to the function so that the
  * context must not be stored as member.
- *
+ * <p>
  * Basically this is our way to make typesafe calls without instanceof switches
  * or if else trees
  */

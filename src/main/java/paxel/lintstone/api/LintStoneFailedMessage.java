@@ -23,7 +23,7 @@ public interface LintStoneFailedMessage {
     /**
      * Retrieve the name of the failing actor.
      *
-     * @return
+     * @return The name of the actor
      */
     String getActorName();
 }

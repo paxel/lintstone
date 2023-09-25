@@ -61,9 +61,7 @@ class Actor {
             // TODO: catch exception. introduce error handler.
         };
         if (blockThreshold == null) {
-            if (!sequentialProcessor.add(runnable)) {
-                throw new IllegalStateException("The sequential processor rejected the message.");
-            }
+            sequentialProcessor.add(runnable);
         } else {
             if (!sequentialProcessor.addWithBackPressure(runnable, blockThreshold)) {
                 throw new IllegalStateException("The sequential processor rejected the message.");
@@ -107,7 +105,7 @@ class Actor {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
-        boolean success = sequentialProcessor.add(() -> {
+         sequentialProcessor.add(() -> {
             // we update the message context with the reply and give it to the reply handler
             MessageContext mec = messageContextFactory.create(reply, (msg, self) -> this.handleReply(msg, self, Optional.empty(), Optional.empty()));
             try {
@@ -117,9 +115,6 @@ class Actor {
             }
             // TODO: catch exception. introduce error handler.
         });
-        if (!success) {
-            throw new IllegalStateException("The sequential processor rejected the Runnable.");
-        }
         totalReplies.incrementAndGet();
     }
 

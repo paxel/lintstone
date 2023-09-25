@@ -127,7 +127,7 @@ public class InternalAskTest {
 
         @Override
         public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> words.addAll(Arrays.asList(txt.trim().split(" ")).stream().filter(f->!f.trim().isEmpty()).map(String::toLowerCase).collect(Collectors.toList()))).inCase(EndMessage.class, (dmg, askContext) -> {
+            mec.inCase(String.class, (txt, m) -> words.addAll(Arrays.stream(txt.trim().split(" ")).filter(f->!f.trim().isEmpty()).map(String::toLowerCase).collect(Collectors.toList()))).inCase(EndMessage.class, (dmg, askContext) -> {
                 ArrayList<String> list = new ArrayList<>(words);
                 Collections.sort(list);
                 askContext.reply(String.join(",", list));
