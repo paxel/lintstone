@@ -1,12 +1,11 @@
 # lintstone
 There is no Thread Thlintstone. Lintstone is a simple actor framework. nough said.
 
-NOTE: this is the java 11 compatibility branch. This is probably not compatible with JAVA 8
 
 ```xml
 <dependency>
     <groupId>io.github.paxel</groupId>
-    <artifactId>lintstone-java11</artifactId>
+    <artifactId>lintstone</artifactId>
     <version><!-- version see release page -->></version>
 </dependency>
 ```
