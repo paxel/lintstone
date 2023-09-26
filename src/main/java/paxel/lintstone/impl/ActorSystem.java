@@ -41,8 +41,8 @@ public class ActorSystem implements LintStoneSystem {
 
     LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, ActorSettings settings) {
         SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
-        sequentialProcessorBuilder.setBatchSize(settings.getBatch());
-        sequentialProcessorBuilder.setErrorHandler(settings.getErrorHandler());
+        sequentialProcessorBuilder.setBatchSize(settings.batch());
+        sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
     }
 

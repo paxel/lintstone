@@ -11,19 +11,19 @@ public interface LintStoneFailedMessage {
      *
      * @return the failed message
      */
-    Object getMessage();
+    Object message();
 
     /**
      * Retrieve the cause of the failure.
      *
      * @return the cause.
      */
-    Throwable getCause();
+    Throwable cause();
 
     /**
      * Retrieve the name of the failing actor.
      *
      * @return The name of the actor
      */
-    String getActorName();
+    String actorName();
 }

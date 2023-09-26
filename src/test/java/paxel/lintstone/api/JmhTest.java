@@ -138,19 +138,13 @@ public class JmhTest {
         new Runner(opt).run();
     }
 
-    private static class EndActor implements LintStoneActor {
-
-        private final CountDownLatch latch;
-
-        public EndActor(CountDownLatch latch) {
-            this.latch = latch;
-        }
+    private record EndActor(CountDownLatch latch) implements LintStoneActor {
 
         @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            latch.countDown();
+            public void newMessageEvent(LintStoneMessageEventContext mec) {
+                latch.countDown();
+            }
         }
-    }
 
     private static class MessageActor implements LintStoneActor {
 

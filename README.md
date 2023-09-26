@@ -90,3 +90,18 @@ for (String text : data) {
 String v = dist.<String>ask(new EndMessage())
                .get(1, TimeUnit.MINUTES);
 ```
+
+
+# Benchmarks
+
+```
+Benchmark                                  Mode  Cnt       Score      Error  Units
+JmhTest.run001ActorOn001Thread            thrpt    5   14807.641 ±  118.880  ops/s
+JmhTest.run002ActorOn001Thread            thrpt    5   14793.968 ±  132.940  ops/s
+JmhTest.run010ActorOn001Thread            thrpt    5   14767.468 ±  141.431  ops/s
+JmhTest.run010ActorOn010Thread            thrpt    5  122679.731 ± 2291.937  ops/s
+JmhTest.run020ActorOn020Thread            thrpt    5  165262.649 ± 9270.499  ops/s
+JmhTest.run030ActorOn020Thread            thrpt    5  164761.670 ± 5103.291  ops/s
+JmhTest.run999ActorOn010Threads           thrpt    5  110869.939 ± 1938.133  ops/s
+JmhTest.run999ActorOnWorkStealingThreads  thrpt    5    4200.800 ±  109.647  ops/s
+```

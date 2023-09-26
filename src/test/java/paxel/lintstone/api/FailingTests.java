@@ -88,7 +88,7 @@ public class FailingTests {
         }
 
         private void handleString(FailedMessage go, LintStoneMessageEventContext m) {
-            System.out.println("Failed on " + go.getActorName() + " because " + go.getCause() + " when processing " + go.getMessage());
+            System.out.println("Failed on " + go.actorName() + " because " + go.cause() + " when processing " + go.message());
 
             final LintStoneActorAccess me = m.getActor(m.getName());
             me.send(true);

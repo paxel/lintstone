@@ -19,7 +19,7 @@ public interface ActorSettings {
      *
      * @return the batch size.
      */
-    int getBatch();
+    int batch();
 
 
     /**
@@ -27,7 +27,7 @@ public interface ActorSettings {
      *
      * @return the error handler.
      */
-    ErrorHandler getErrorHandler();
+    ErrorHandler errorHandler();
 
     /**
      * Create a builder to build an implementation of the Settings.
