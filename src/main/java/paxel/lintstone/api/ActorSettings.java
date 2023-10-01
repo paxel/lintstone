@@ -1,6 +1,7 @@
 package paxel.lintstone.api;
 
-import paxel.bulkexecutor.ErrorHandler;
+
+import paxel.lintstone.impl.ActorSettingsBuilder;
 
 /**
  * The actor settings for the creation of configured actors.
@@ -12,14 +13,6 @@ public interface ActorSettings {
      */
     ActorSettings DEFAULT = ActorSettings.create().build();
 
-
-
-    /**
-     * The number of messages that should be processed by the actor in one batch.
-     *
-     * @return the batch size.
-     */
-    int batch();
 
 
     /**

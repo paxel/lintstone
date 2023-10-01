@@ -1,6 +1,5 @@
 package paxel.lintstone.api;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -87,25 +86,35 @@ public interface LintStoneMessageEventContext {
 
     /**
      * Retrieve the actor with given name. This method will always return an
-     * object. Use the provided object to check if the actor exists by calling {@link  LintStoneActorAccess#exists()
+     * object. Use the provided object to check if the actor exists by calling {@link  LintStoneActorAccessor#exists()
      * }. Please note, that the existence of the actor might change, and thus
      * the result of exists might change later.
      *
      * @param name The name of the actor.
      * @return The actor access.
      */
-    LintStoneActorAccess getActor(String name);
+    LintStoneActorAccessor getActor(String name);
 
     /**
      * This method delegates to
-     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, Optional, ActorSettings)}.
+     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, ActorSettings, Object)}.
      *
      * @param name        The name of the actor.
      * @param factory     The factory.
      * @param initMessage The init message.
      * @return The new or old actor access.
      */
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings);
+    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, ActorSettings settings);
+
+    /**
+     * This method delegates to
+     * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, ActorSettings)}.
+     *
+     * @param name        The name of the actor.
+     * @param factory     The factory.
+     * @return The new or old actor access.
+     */
+    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);
 
     /**
      * Unregisters this Actor.

@@ -21,16 +21,18 @@ the context object is only valid for the one message object that it handles.
 
 ## Usage
 
-First you need to init the actorsystem
+First you need to init the actorsystem.
+Since JAVA 21 the ActorSystem uses Virtual Threads internally.
+Each Actor runs on one virtual Thread and only gets active if a message is available.
 
 ```java
-LintStoneSystem system = LintStoneSystemFactory.create(Executors.newCachedThreadPool());
+LintStoneSystem system = LintStoneSystemFactory.create();
 ```
 
 the system creates the actors
 
 ```java
-LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), Optional.empty(), ActorSettings.DEFAULT);
+LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), ActorSettings.DEFAULT);
 ...
 fileCollector.send(FileCollector.fileMessage(root, readOnly));
 ```
@@ -60,7 +62,7 @@ The message is enqueued and eventually processed by the actor instance
         } else {
             fileData += length;
             final LintStoneActorAccess actor = actors.computeIfAbsent(length, k -> {
-                return m.registerActor("counter-" + length, () -> new FileComparator(length), Optional.empty(), ActorSettings.DEFAULT);
+                return m.registerActor("counter-" + length, () -> new FileComparator(length), ActorSettings.DEFAULT);
             });
             actor.send(fileMessage(f, readOnly));
         }

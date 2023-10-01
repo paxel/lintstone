@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,9 +25,8 @@ public class ExternalAskTest {
 
     @Test
     public void testAskExternalFuture() throws InterruptedException, ExecutionException {
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
-                Optional.empty(), ActorSettings.create().build());
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
         md5.send("This is my test string");
         for (int i = 0; i < 1000; i++) {
@@ -47,9 +45,8 @@ public class ExternalAskTest {
 
     @Test
     public void testAskExternalFutureTypeFail() throws InterruptedException, ExecutionException {
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
-                Optional.empty(), ActorSettings.create().build());
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
         md5.send("This is my test string");
         for (int i = 0; i < 1000; i++) {
@@ -65,9 +62,8 @@ public class ExternalAskTest {
 
     @Test
     public void testAskExternal() throws InterruptedException {
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess md5 = system.registerActor("md5", Md5Actor::new,
-                Optional.empty(), ActorSettings.create().build());
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
         AtomicReference<String> result = new AtomicReference<>();
         md5.send("This is my test string");

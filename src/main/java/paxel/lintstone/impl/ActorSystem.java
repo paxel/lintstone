@@ -5,94 +5,87 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import paxel.bulkexecutor.GroupingExecutor;
-import paxel.bulkexecutor.SequentialProcessor;
-import paxel.bulkexecutor.SequentialProcessorBuilder;
-import paxel.lintstone.api.ActorSettings;
-import paxel.lintstone.api.LintStoneActor;
-import paxel.lintstone.api.LintStoneActorAccess;
-import paxel.lintstone.api.LintStoneActorFactory;
-import paxel.lintstone.api.LintStoneSystem;
+import paxel.lintstone.api.*;
 
 public class ActorSystem implements LintStoneSystem {
 
     private final Map<String, Actor> actors = Collections.synchronizedMap(new HashMap<>());
     private final GroupingExecutor groupingExecutor;
-    private final ExecutorService executorService;
 
-    public ActorSystem(ExecutorService executorService) {
-        this.executorService = executorService;
-        groupingExecutor = new GroupingExecutor(executorService);
+    public ActorSystem() {
+        groupingExecutor = new GroupingExecutor();
     }
-
 
     @Override
-    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
-        return registerActor(name, factory, initMessage, Optional.empty(), settings);
+    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings, Object initMessage) {
+        return registerActor(name, factory, null, settings, initMessage);
     }
 
-
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender) {
-        return registerActor(name, factory, initMessage, sender, groupingExecutor.create().build());
+    @Override
+    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings) {
+        return registerActor(name, factory, null, settings, null);
     }
 
-    LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, ActorSettings settings) {
+    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, ActorSettings settings, Object initMessage) {
         SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
-        sequentialProcessorBuilder.setBatchSize(settings.batch());
         sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
-        return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder.build());
+        return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder);
     }
 
 
-    private LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, Optional<SelfUpdatingActorAccess> sender, SequentialProcessor sequentialProcessor) {
+    private LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, SequentialProcessorBuilder sequentialProcessor) {
         synchronized (actors) {
             Actor existing = actors.get(name);
             if (existing != null) {
-                return new SelfUpdatingActorAccess(name, existing, this, sender);
+                return new SelfUpdatingActorAccessor(name, existing, this, sender);
             }
             LintStoneActor actorInstance = factory.create();
-            Actor newActor = new Actor(name, actorInstance, sequentialProcessor, this, sender);
+            Actor newActor = new Actor(name, actorInstance, sequentialProcessor.build(), this, sender);
             // actor receives the initMessage as first message.
-            initMessage.ifPresent(msg -> newActor.send(msg, Optional.empty(), Optional.empty(), null));
+            Optional.ofNullable(initMessage).ifPresent(msg -> newActor.send(msg, null, null, null));
             actors.put(name, newActor);
-            return new SelfUpdatingActorAccess(name, newActor, this, sender);
+            return new SelfUpdatingActorAccessor(name, newActor, this, sender);
         }
     }
 
+
     @Override
     public void shutDown() {
-        executorService.shutdown();
+        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        groupingExecutor.shutdown();
     }
 
     @Override
     public void shutDownAndWait() throws InterruptedException {
-        executorService.shutdown();
+        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        groupingExecutor.shutdown();
         //wait forever and a day
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
+        groupingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
     }
 
     @Override
     public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
-        executorService.shutdown();
-       return executorService.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
+        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        groupingExecutor.shutdown();
+        return groupingExecutor.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override
     public void shutDownNow() {
-        // who wants to shutdown now doesnÄt want to know about the processes.
-        executorService.shutdownNow();
+        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(true));
+        groupingExecutor.shutdownNow();
     }
+
 
     @Override
     public boolean unregisterActor(String name) {
         synchronized (actors) {
             Actor remove = actors.remove(name);
             if (remove != null) {
-                // this actor will not accept any messages anymore. The Accessess should try to get a new instance or fail.
-                remove.unregister();
+                // this actor will not accept any messages anymore. The Accesses should try to get a new instance or fail.
+                remove.unregisterGracefully();
                 return true;
             }
             return false;
@@ -110,6 +103,7 @@ public class ActorSystem implements LintStoneSystem {
         StringBuilder stringBuilder = new StringBuilder("ActorSystem{");
 
         actors.forEach((a, f) -> stringBuilder.append(f.toString()).append("\n"));
+        stringBuilder.append(" exec:").append(groupingExecutor.toString());
         stringBuilder.append("}");
 
         return stringBuilder.toString();

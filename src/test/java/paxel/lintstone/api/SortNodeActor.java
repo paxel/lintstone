@@ -9,8 +9,8 @@ import java.util.concurrent.CompletableFuture;
 public class SortNodeActor implements LintStoneActor {
     private final String name;
     private Long value;
-    private LintStoneActorAccess left;
-    private LintStoneActorAccess right;
+    private LintStoneActorAccessor left;
+    private LintStoneActorAccessor right;
 
     public SortNodeActor(String name) {
         this.name = name;
@@ -24,7 +24,7 @@ public class SortNodeActor implements LintStoneActor {
     }
 
     private void err(Object o, LintStoneMessageEventContext lintStoneMessageEventContext) {
-        System.err.printf("Unsupported message %s: <%s>%n", o.getClass(), o);
+        System.err.printf("Unsupported in " + this + " message %s: <%s>%n", o.getClass(), o);
     }
 
     private void get(String ignore, LintStoneMessageEventContext lintStoneMessageEventContext) {
@@ -61,15 +61,25 @@ public class SortNodeActor implements LintStoneActor {
         else if (this.value > value) {
             // lesser than us. delegate to left actor
             if (this.left == null)
-                this.left = lintStoneMessageEventContext.registerActor(name + "<", () -> new SortNodeActor(name + "<"), Optional.of(value), ActorSettings.DEFAULT);
+                this.left = lintStoneMessageEventContext.registerActor(name + "<", () -> new SortNodeActor(name + "<"),value, ActorSettings.DEFAULT);
             else
                 left.send(value);
         } else {
             // bigger than us. delegate to right actor
             if (this.right == null)
-                this.right = lintStoneMessageEventContext.registerActor(name + ">", () -> new SortNodeActor(name + ">"), Optional.of(value), ActorSettings.DEFAULT);
+                this.right = lintStoneMessageEventContext.registerActor(name + ">", () -> new SortNodeActor(name + ">"), value, ActorSettings.DEFAULT);
             else
                 right.send(value);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SortNodeActor{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                ", left=" + left +
+                ", right=" + right +
+                '}';
     }
 }

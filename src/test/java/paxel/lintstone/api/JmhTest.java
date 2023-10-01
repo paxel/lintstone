@@ -2,9 +2,7 @@ package paxel.lintstone.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -37,7 +35,7 @@ public class JmhTest {
         int actorCount = 1;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -47,7 +45,7 @@ public class JmhTest {
         int actorCount = 2;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -57,7 +55,7 @@ public class JmhTest {
         int actorCount = 10;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -67,7 +65,7 @@ public class JmhTest {
         int actorCount = 10;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -77,7 +75,7 @@ public class JmhTest {
         int actorCount = 20;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -87,7 +85,7 @@ public class JmhTest {
         int actorCount = 30;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -97,7 +95,7 @@ public class JmhTest {
         int actorCount = 999;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.createLimitedThreadCount(threads));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
@@ -107,17 +105,15 @@ public class JmhTest {
         int actorCount = 999;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create(Executors.newWorkStealingPool(actorCount)));
+        run(threads, actorCount, messages, LintStoneSystemFactory.create());
     }
 
     private void run(int threads, int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
         CountDownLatch latch = new CountDownLatch(threads);
-        system.registerActor("END", () -> new EndActor(latch), 
-                Optional.empty(), ActorSettings.create().build());
-        List<LintStoneActorAccess> actors = new ArrayList<>();
+        system.registerActor("END", () -> new EndActor(latch), ActorSettings.DEFAULT);
+        List<LintStoneActorAccessor> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
-            actors.add(system.registerActor(TEST + i, MessageActor::new,
-                    Optional.empty(), ActorSettings.create().build()));
+            actors.add(system.registerActor(TEST + i, MessageActor::new, ActorSettings.DEFAULT));
         }
         for (int i = 0; i < messages; i++) {
             actors.get(i % actorCount).send(i);
@@ -141,10 +137,10 @@ public class JmhTest {
     private record EndActor(CountDownLatch latch) implements LintStoneActor {
 
         @Override
-            public void newMessageEvent(LintStoneMessageEventContext mec) {
-                latch.countDown();
-            }
+        public void newMessageEvent(LintStoneMessageEventContext mec) {
+            latch.countDown();
         }
+    }
 
     private static class MessageActor implements LintStoneActor {
 
@@ -163,11 +159,11 @@ public class JmhTest {
 
                         sum += a;
                     }
-            ).inCase(String.class, (a, b) -> {
+            ).inCase(String.class, (name, reply) -> {
                 // notify to the given name, the sum
-                b.send(a, sum);
+                reply.send(name, sum);
                 // and kill yourself
-                b.unregister();
+                reply.unregister();
             }).otherwise((a, b) -> System.err.println("unknown message: " + a));
         }
     }

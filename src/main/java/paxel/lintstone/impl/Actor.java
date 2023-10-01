@@ -1,10 +1,6 @@
 package paxel.lintstone.impl;
 
-import paxel.bulkexecutor.SequentialProcessor;
-import paxel.lintstone.api.LintStoneActor;
-import paxel.lintstone.api.NoSenderException;
-import paxel.lintstone.api.ReplyHandler;
-import paxel.lintstone.api.UnregisteredRecipientException;
+import paxel.lintstone.api.*;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,11 +23,11 @@ class Actor {
     private final AtomicLong totalReplies = new AtomicLong();
     private final MessageContextFactory messageContextFactory;
 
-    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, Optional<SelfUpdatingActorAccess> sender) {
+    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender) {
         this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
-        messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccess(name, this, system, sender));
+        messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccessor(name, this, system, sender));
     }
 
 
@@ -39,7 +35,7 @@ class Actor {
         return registered;
     }
 
-    void send(Object message, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
+    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
@@ -52,8 +48,8 @@ class Actor {
             try {
                 actorInstance.newMessageEvent(mec);
             } catch (Exception e) {
-                if (sender.isPresent()) {
-                    sender.get().send(new FailedMessage(message, e, name));
+                if (sender != null) {
+                    sender.send(new FailedMessage(message, e, name));
                 } else {
                     LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
                 }
@@ -81,33 +77,39 @@ class Actor {
      *                     If the replyHandler is given, the relation between msg and reply is well defined.
      *                     All reply during the handling of an ask are delegated to the replyHandler.
      */
-    private void handleReply(Object reply, SelfUpdatingActorAccess self, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler) {
-        if (replyHandler.isEmpty()) {
+    private void handleReply(Object reply, SelfUpdatingActorAccessor self, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+        if (replyHandler == null) {
             // we don't have to handle this other than just sending it to the sender of the original message.
-            sender.orElseThrow(() -> new NoSenderException("Message has no Sender"))
+            Optional.ofNullable(sender)
+                    .orElseThrow(() -> new NoSenderException("Message has no Sender"))
                     .send(reply, self);
-        } else if (sender.isPresent()) {
+        } else if (sender != null) {
             // we have a reply handler and a sender. so we want the sender to execute the result itself
-            sender.get().run(replyHandler.get(), reply);
+            sender.run(replyHandler, reply);
         } else {
             // result handler without sender. this was asked from outside.
             // we could just execute the runnable here, but then the processing of the msg would be "interrupted" with the processing
             // of the reply. so we enqueue it in ourselves.
-            self.run(replyHandler.get(), reply);
+            self.run(replyHandler, reply);
         }
     }
 
-    void unregister() {
+    void unregisterGracefully() {
         registered = false;
+        sequentialProcessor.unregisterGracefully();
+    }
+
+    void shutdown(boolean now) {
+        sequentialProcessor.shutdown(now);
     }
 
     public void run(ReplyHandler replyHandler, Object reply) {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
-         sequentialProcessor.add(() -> {
+        sequentialProcessor.add(() -> {
             // we update the message context with the reply and give it to the reply handler
-            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> this.handleReply(msg, self, Optional.empty(), Optional.empty()));
+            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> this.handleReply(msg, self, null, null));
             try {
                 replyHandler.process(mec);
             } catch (Exception e) {

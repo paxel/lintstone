@@ -3,7 +3,6 @@ package paxel.lintstone.api;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -24,16 +23,16 @@ public class LintStoneSystemTest {
 
     @Test
     public void testSomeMethod() throws InterruptedException {
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess sumActor = system.registerActor("sumActor", () -> new SumActor(this::result), Optional.empty(), ActorSettings.create().build());
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        LintStoneActorAccessor sumActor = system.registerActor("sumActor", () -> new SumActor(this::result),  ActorSettings.DEFAULT);
 
-        Map<Integer, LintStoneActorAccess> actors = new HashMap<>();
+        Map<Integer, LintStoneActorAccessor> actors = new HashMap<>();
         for (int i = 1; i < 100000; i++) {
             int m = i % 30;
             actors.computeIfAbsent(m, val -> {
                         // create a new actor on the fly
                         final String name = "addActor" + val;
-                        final LintStoneActorAccess actor = system.registerActor(name, AdderActor::new, Optional.empty(), ActorSettings.create().build());
+                        final LintStoneActorAccessor actor = system.registerActor(name, AdderActor::new,  ActorSettings.DEFAULT);
                         // register the actor at the sum actor
                         sumActor.send(name);
                         // tell the adder his name.
@@ -46,7 +45,7 @@ public class LintStoneSystemTest {
 
         // tell the adder, that it's finished
         final EndMessage endMessage = new EndMessage();
-        for (Map.Entry<Integer, LintStoneActorAccess> entry : actors.entrySet()) {
+        for (Map.Entry<Integer, LintStoneActorAccessor> entry : actors.entrySet()) {
             entry.getValue().send(endMessage);
         }
 

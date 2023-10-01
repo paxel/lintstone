@@ -3,7 +3,6 @@ package paxel.lintstone.api;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -15,9 +14,9 @@ public class ActorSortTest {
     @Test
     void sort() throws ExecutionException, InterruptedException {
 
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
+        LintStoneSystem system = LintStoneSystemFactory.create();
 
-        LintStoneActorAccess root = system.registerActor("root", () -> new SortNodeActor("/"), Optional.empty(), ActorSettings.DEFAULT);
+        LintStoneActorAccessor root = system.registerActor("root", () -> new SortNodeActor("/"),  ActorSettings.DEFAULT);
 
         // send numbers to root actor. it will generate an actor system that resembles a simple binary tree
         Random random = new Random(1007);

@@ -1,25 +1,24 @@
 package paxel.lintstone.impl;
 
-import paxel.lintstone.api.LintStoneActorAccess;
+import paxel.lintstone.api.LintStoneActorAccessor;
 import paxel.lintstone.api.ReplyHandler;
 import paxel.lintstone.api.UnregisteredRecipientException;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * This ActorAccess will try to fetch a new instance of an actor in case the
  * current one becomes invalid.
  */
-public class SelfUpdatingActorAccess implements LintStoneActorAccess {
+public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
 
-    private final Optional<SelfUpdatingActorAccess> sender;
+    private final SelfUpdatingActorAccessor sender;
     private final String name;
     private final ActorSystem system;
     // not volatile as we expect to be used singlethreaded
     private Actor actor;
 
-    SelfUpdatingActorAccess(String name, Actor actor, ActorSystem system, Optional<SelfUpdatingActorAccess> sender) {
+    SelfUpdatingActorAccessor(String name, Actor actor, ActorSystem system, SelfUpdatingActorAccessor sender) {
         this.name = name;
         this.actor = actor;
         this.system = system;
@@ -28,12 +27,12 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
 
     @Override
     public void send(Object message) throws UnregisteredRecipientException {
-        tell(message, sender, Optional.empty(), null);
+        tell(message, sender, null, null);
     }
 
     @Override
     public void sendWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
-        tell(message, sender, Optional.empty(),blockThreshold);
+        tell(message, sender, null, blockThreshold);
     }
 
     /**
@@ -56,21 +55,21 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
         }
     }
 
-    public void send(Object message, SelfUpdatingActorAccess sender) throws UnregisteredRecipientException {
-        tell(message, Optional.ofNullable(sender), Optional.empty(), null);
+    public void send(Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
+        tell(message, sender, null, null);
     }
 
-    private void tell(Object message, Optional<SelfUpdatingActorAccess> sender, Optional<ReplyHandler> replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
+    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
         }
         try {
-            actor.send(message, sender, replyHandler,blockThreshold);
+            actor.send(message, sender, replyHandler, blockThreshold);
         } catch (UnregisteredRecipientException ignoredOnce) {
             actor = null;
             updateActor();
-            // second try throws ,the exception to the outside, in case the actore provided was already unregistered.
-            actor.send(message, sender, replyHandler,blockThreshold);
+            // second try throws the exception to the outside, in case the actor provided was already unregistered.
+            actor.send(message, sender, replyHandler, blockThreshold);
         }
     }
 
@@ -91,19 +90,19 @@ public class SelfUpdatingActorAccess implements LintStoneActorAccess {
     @Override
     public void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         // replyHandler is required, therefore not Optional.ofNullable
-        tell(message, sender, Optional.of(replyHandler),null);
+        tell(message, sender, replyHandler, null);
     }
 
     @Override
     public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
         CompletableFuture<F> result = new CompletableFuture<>();
-        tell(message, sender, Optional.of(mec -> mec.otherwise((reply, resultMec) -> {
+        tell(message, sender, mec -> mec.otherwise((reply, resultMec) -> {
             try {
                 result.complete((F) reply);
             } catch (Exception e) {
                 result.completeExceptionally(e);
             }
-        })),null);
+        }), null);
         return result;
     }
 

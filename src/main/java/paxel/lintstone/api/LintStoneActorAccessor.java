@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
  * This interface is used to send messages to an actor. This object should never
  * be used multithreaded unless synchronized externally.
  */
-public interface LintStoneActorAccess {
+public interface LintStoneActorAccessor {
 
     /**
      * Sends a message to the Actor represented by this Access.

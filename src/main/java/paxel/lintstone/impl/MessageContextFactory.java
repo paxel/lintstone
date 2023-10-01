@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
  */
 public class MessageContextFactory {
     private final ActorSystem actorSystem;
-    private final SelfUpdatingActorAccess self;
+    private final SelfUpdatingActorAccessor self;
 
     /**
      * The factory is created with the actorSystem and the current actor access.
@@ -16,7 +16,7 @@ public class MessageContextFactory {
      * @param actorSystem The system.
      * @param self        the current actor access.
      */
-    public MessageContextFactory(ActorSystem actorSystem, SelfUpdatingActorAccess self) {
+    public MessageContextFactory(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
         this.self = self;
     }
@@ -28,7 +28,7 @@ public class MessageContextFactory {
      * @param replyHandler The reply handler for the reply method of the context.
      * @return The MessageContext.
      */
-    public MessageContext create(Object message, BiConsumer<Object, SelfUpdatingActorAccess> replyHandler) {
+    public MessageContext create(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         return new MessageContext(message, actorSystem, self, replyHandler);
     }
 }

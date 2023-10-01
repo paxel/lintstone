@@ -34,16 +34,16 @@ public class InternalAskTest {
 
     @Test
     public void testAskExternal() throws InterruptedException, ExecutionException, TimeoutException {
-        LintStoneSystem system = LintStoneSystemFactory.createLimitedThreadCount(5);
+        LintStoneSystem system = LintStoneSystemFactory.create();
         // the entry actor is limited to 1 message at the time input queue
         // just to test that the messages are added even so we send faster than the actor can process (creating backpressure)
-        LintStoneActorAccess dist = system.registerActor("dist", Distributor::new, Optional.empty(), ActorSettings.create().build());
-        system.registerActor("wordCount", WordCount::new, Optional.empty(), ActorSettings.create().build());
-        system.registerActor("charCount", CharCount::new, Optional.empty(), ActorSettings.create().build());
-        system.registerActor("sorter", Sorter::new, Optional.empty(), ActorSettings.create().build());
+        LintStoneActorAccessor dist = system.registerActor("dist", Distributor::new,  ActorSettings.DEFAULT);
+        system.registerActor("wordCount", WordCount::new,  ActorSettings.DEFAULT);
+        system.registerActor("charCount", CharCount::new,  ActorSettings.DEFAULT);
+        system.registerActor("sorter", Sorter::new, ActorSettings.DEFAULT);
 
-        LintStoneSystem s = LintStoneSystemFactory.createLimitedThreadCount(5);
-        LintStoneActorAccess syncedOut = s.registerActor("out", () ->  mec -> mec.otherwise((o,m)->System.out.println(o)), Optional.empty(), ActorSettings.create().build());
+        LintStoneSystem s = LintStoneSystemFactory.create();
+        LintStoneActorAccessor syncedOut = s.registerActor("out", () -> mec -> mec.otherwise((o, m)->System.out.println(o)),  ActorSettings.DEFAULT);
 
         for (String text : data) {
             dist.send(text);

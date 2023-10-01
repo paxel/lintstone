@@ -44,11 +44,6 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.github.paxel</groupId>
-            <artifactId>group-executor</artifactId>
-            <version>2.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <version>2.2</version>

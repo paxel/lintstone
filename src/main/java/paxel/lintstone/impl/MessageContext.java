@@ -12,11 +12,11 @@ import java.util.function.BiConsumer;
 public class MessageContext implements LintStoneMessageEventContext {
 
     private final ActorSystem actorSystem;
-    private final SelfUpdatingActorAccess self;
+    private final SelfUpdatingActorAccessor self;
     private final Object message;
-    private final BiConsumer<Object, SelfUpdatingActorAccess> replyHandler;
+    private final BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
 
-    public MessageContext(Object message, ActorSystem actorSystem, SelfUpdatingActorAccess self, BiConsumer<Object, SelfUpdatingActorAccess> replyHandler) {
+    public MessageContext(Object message, ActorSystem actorSystem, SelfUpdatingActorAccessor self, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         this.message = message;
         this.actorSystem = actorSystem;
         this.self = self;
@@ -44,7 +44,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), Optional.empty(), null);
+        actor.get().send(msg, self, null, null);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, Optional.of(self), Optional.of(handler), null);
+        actor.get().send(msg, self, handler, null);
     }
 
     @Override
@@ -63,27 +63,32 @@ public class MessageContext implements LintStoneMessageEventContext {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
         CompletableFuture<F> result = new CompletableFuture<>();
-        actor.get().send(msg, Optional.of(self), Optional.of(mec -> mec.otherwise((m, o) -> {
+        actor.get().send(msg, self, mec -> mec.otherwise((m, o) -> {
             try {
                 result.complete((F) o);
             } catch (Exception e) {
                 result.completeExceptionally(e);
             }
-        })), null);
+        }), null);
         return result;
     }
 
 
     @Override
-    public LintStoneActorAccess getActor(String name) {
+    public LintStoneActorAccessor getActor(String name) {
         // give a empty ref, that is filled on demand.
-        return new SelfUpdatingActorAccess(name, null, actorSystem, Optional.of(self));
+        return new SelfUpdatingActorAccessor(name, null, actorSystem, self);
     }
 
 
     @Override
-    public LintStoneActorAccess registerActor(String name, LintStoneActorFactory factory, Optional<Object> initMessage, ActorSettings settings) {
-        return actorSystem.registerActor(name, factory, initMessage, Optional.of(self), settings);
+    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, ActorSettings settings) {
+        return actorSystem.registerActor(name, factory, self, settings, initMessage);
+    }
+
+    @Override
+    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings) {
+        return actorSystem.registerActor(name, factory, self, settings, null);
     }
 
     @Override

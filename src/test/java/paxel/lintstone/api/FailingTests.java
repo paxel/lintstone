@@ -4,45 +4,86 @@ import org.junit.Assert;
 import org.junit.Test;
 import paxel.lintstone.impl.FailedMessage;
 
-import java.util.Optional;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  */
 public class FailingTests {
 
-    private static final Random R = new Random(0xbadbee);
-    public static final String LULU = "lulu";
-    public static final String LALA = "lala";
-    public static final String STOP_ACTOR = "floor";
+    public static final String ECHO_ACTOR = "echo-actor";
+    public static final String GATEWAY = "gateway";
+    public static final String STOP_ACTOR = "end-processor";
+    public static final String FAILING = "failing";
+    public static final String NOT_EXISTANT = "no";
     final CountDownLatch latch = new CountDownLatch(1);
 
     public FailingTests() {
     }
 
     @Test
-    public void testSomeMethod() throws InterruptedException {
-        LintStoneSystem system = LintStoneSystemFactory.create(Executors.newWorkStealingPool());
-        system.registerActor(STOP_ACTOR, () -> a -> latch.countDown(), Optional.empty(), ActorSettings.create().build());
+    public void testFailedMessageResponse() throws InterruptedException, ExecutionException {
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        List<Object> errorMessage = new ArrayList<>();
+        system.registerActor(STOP_ACTOR, () -> a -> {
+            System.out.println("stop received. countdown latch");
+            latch.countDown();
+        }, ActorSettings.create().setErrorHandler(errorMessage::add).build());
 
-        // this is actually happening
-        system.registerActor(LALA, StupidActor::new, Optional.of("Go"), ActorSettings.create().build());
 
-        LintStoneActorAccess lulu = system.registerActor(LULU, () -> a -> a.reply("nope"), Optional.empty(), ActorSettings.create().build());
+        // This creates an actor that will create a FAILING actor
+        LintStoneActorAccessor stupid = system.registerActor(GATEWAY, StupidActor::new, ActorSettings.create().setErrorHandler(errorMessage::add).build());
 
-        lulu.send("you ok?");
+        // this will create the error handler
+        // send a "Hi" to the error handler
+        // that fails
+        // the failure causes a FailedMessage in the GATEWAY
+        // that will cause the stop
+        stupid.send("Don't be stupid");
+
 
         boolean await = latch.await(10, TimeUnit.SECONDS);
         if (!await)
             Assert.fail("Timed out without activating latch");
+
+        System.out.println("Test is finished");
         // wait for the result
+        System.out.println(system);
         system.shutDownAndWait();
+        System.out.println("wait");
         system.shutDownNow();
+        System.out.println("now");
         system.shutDown();
+        System.out.println("down");
+    }
+
+    @Test
+    public void testGetDataOut() throws InterruptedException, ExecutionException {
+        LintStoneSystem system = LintStoneSystemFactory.create();
+        List<Object> errorMessage = new ArrayList<>();
+
+
+        LintStoneActorAccessor echoActor = system.registerActor(ECHO_ACTOR, () -> a -> a.reply("echo"), ActorSettings.create().setErrorHandler(errorMessage::add).build());
+
+        // this message goes to an actor that wants to reply. but can't, because we are calling from outside the actor system
+        // so this should be a message in the errorHandler
+        echoActor.send("you ok?");
+        // this is the correct way to ask for data from outside the actorSystem
+        String echo = echoActor.<String>ask("please tell me").get();
+        assertThat(echo, is("echo"));
+
+        // the first try should have created a message here
+        // but currently it's just a log message
+        assertThat(errorMessage.size(), is(0));
+
+        system.shutDownAndWait();
     }
 
     private static class StupidActor implements LintStoneActor {
@@ -51,32 +92,40 @@ public class FailingTests {
         public void newMessageEvent(LintStoneMessageEventContext mec) {
             mec
                     .inCase(String.class, this::handleString)
-                    .inCase(FailedMessage.class, this::handleString)
+                    .inCase(FailedMessage.class, this::handleFail)
                     .otherwise((o, m) -> System.out.println("otherwise: " + o));
         }
 
         private void handleString(String go, LintStoneMessageEventContext mec) {
-            LintStoneActorAccess registered = mec.registerActor("dala", () -> m -> {
+            LintStoneActorAccessor registered = mec.registerActor(FAILING, () -> m -> {
+                // this temporay actor will fail with each message that it receives
                 throw new IllegalArgumentException("Go away");
-            }, Optional.empty(), ActorSettings.DEFAULT);
+            }, ActorSettings.DEFAULT);
 
             if (registered.exists()) {
-                LintStoneActorAccess second = mec.registerActor("dala", () -> m -> System.out.print("I am ignored"), Optional.empty(), ActorSettings.DEFAULT);
+                // the actor is registered, registering it again will not create a new actor but the previous one
+                // in that case the "Go away" actor
+                LintStoneActorAccessor reRegister = mec.registerActor(FAILING, () -> m -> {
+                    // no fail anymore, but this factory will not be called
+                }, ActorSettings.DEFAULT);
 
-                if (second.exists()) {
-                    // will fail on the other actor and produce a failed message for us.
-                    second.send("Hi!");
+                if (reRegister.exists()) {
+                    // so this first message to the actor should fail and be given to the errorhandler
+                    // it also should cause a FailedMessage to be returned to us, that the Message could not be processed
+                    reRegister.send("Hi!");
                 }
             }
-            // will cause otherwise
+            // We send a message to ourselves, that we don't support
+            // the false object will end in the otherwise branch of newMessageEvent
             mec.send(mec.getName(), Boolean.FALSE);
             try {
                 mec.send("Unknown Actor", "Will not be delivered");
                 throw new IllegalStateException("Should have failed");
             } catch (UnregisteredRecipientException unregisteredRecipientException) {
+                // we can't send to unknown actors
             }
 
-            LintStoneActorAccess actor = mec.getActor("no");
+            LintStoneActorAccessor actor = mec.getActor(NOT_EXISTANT);
 
             if (!actor.exists()) {
                 try {
@@ -84,18 +133,26 @@ public class FailingTests {
                     throw new IllegalStateException("Should have failed");
                 } catch (UnregisteredRecipientException unregisteredRecipientException) {
                 }
+                // register an actor with that name
+                mec.registerActor(NOT_EXISTANT, () -> a -> {
+                }, ActorSettings.DEFAULT);
+
+                boolean exists = actor.exists();
+                // would throw exception if LintStoneActorAccessor is not self updating
+                actor.send("This actor reference works now: " + exists);
             }
         }
 
-        private void handleString(FailedMessage go, LintStoneMessageEventContext m) {
+        private void handleFail(FailedMessage go, LintStoneMessageEventContext m) {
+            // The failed message was sent by the temporary actor, because it could not process it
             System.out.println("Failed on " + go.actorName() + " because " + go.cause() + " when processing " + go.message());
 
-            final LintStoneActorAccess me = m.getActor(m.getName());
+            final LintStoneActorAccessor me = m.getActor(m.getName());
             me.send(true);
             // we unregister ourselves
             m.unregister();
             if (me.exists()) {
-                throw new IllegalArgumentException("fwef");
+                throw new IllegalStateException("I was just unregistered");
             }
             try {
                 me.send("will not happen");
@@ -103,21 +160,8 @@ public class FailingTests {
             } catch (UnregisteredRecipientException unregisteredRecipientException) {
             }
 
-            LintStoneActorAccess oldActor = m.registerActor("someOne", () -> a -> {
-
-            }, Optional.empty(), ActorSettings.DEFAULT);
-            oldActor.send("ho");
-            // unregister that one
-            if (m.unregister("someOne")) {
-                // register a new one
-                m.registerActor("someOne", () -> a -> {
-
-                }, Optional.empty(), ActorSettings.DEFAULT);
-
-                oldActor.send("works");
-
-                m.getActor(STOP_ACTOR).send("sztop");
-            }
+            // end the test
+            m.getActor(STOP_ACTOR).send("stop");
         }
     }
 
