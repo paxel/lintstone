@@ -24,12 +24,11 @@ public class Distributor implements LintStoneActor {
     }
 
     private void handleEnd(EndMessage dmg, LintStoneMessageEventContext askContext) {
-        CompletableFuture<Integer> words = new CompletableFuture<>();
-        CompletableFuture<Integer> chars = new CompletableFuture<>();
         CompletableFuture<String> sort = new CompletableFuture<>();
 // each of these completes will be called in the thread context of this actor
-        askContext.ask("wordCount", new EndMessage(), c -> c.inCase(Integer.class, (r, replyContext) -> words.complete(r)));
-        askContext.ask("charCount", new EndMessage(), c -> c.inCase(Integer.class, (r, replyContext) -> chars.complete(r)));
+        CompletableFuture<Integer> words = askContext.ask("wordCount", new EndMessage());
+        CompletableFuture<Integer> chars = askContext.ask("charCount", new EndMessage());
+        // other way to ask
         askContext.ask("sorter", new EndMessage(), c -> c.inCase(String.class, (r, replyContext) -> sort.complete(r)));
 
 // when the last reply comes, the reply of the external ask is fulfilled.

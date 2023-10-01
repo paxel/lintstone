@@ -7,7 +7,7 @@ import paxel.lintstone.api.messages.EndMessage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Sorter implements LintStoneActor {
+public class SorterActor implements LintStoneActor {
     final Set<String> words = new HashSet<>();
 
     @Override

@@ -74,7 +74,7 @@ public class FailingTests {
 
         // this message goes to an actor that wants to reply. but can't, because we are calling from outside the actor system
         // so this should be a message in the errorHandler
-        echoActor.send("you ok?");
+        echoActor.send("the error log is expected.");
         // this is the correct way to ask for data from outside the actorSystem
         String echo = echoActor.<String>ask("please tell me").get();
         assertThat(echo, is("echo"));

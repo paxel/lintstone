@@ -63,7 +63,7 @@ public class MessageContext implements LintStoneMessageEventContext {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
         CompletableFuture<F> result = new CompletableFuture<>();
-        actor.get().send(msg, self, mec -> mec.otherwise((m, o) -> {
+        actor.get().send(msg, self, mec -> mec.otherwise((o, m) -> {
             try {
                 result.complete((F) o);
             } catch (Exception e) {

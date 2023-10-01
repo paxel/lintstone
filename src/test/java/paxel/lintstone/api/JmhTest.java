@@ -2,7 +2,7 @@ package paxel.lintstone.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -11,6 +11,7 @@ import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -29,66 +30,74 @@ public class JmhTest {
     private static final String TEST = "Test";
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run001Actors() throws InterruptedException {
+    @OperationsPerInvocation(1_000)
+    public void run_____1_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int threads = 1;
         int actorCount = 1;
-        int messages = 1000;
+        int messages = 1_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run002Actors() throws InterruptedException {
+    @OperationsPerInvocation(2_000)
+    public void run_____2_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int threads = 1;
         int actorCount = 2;
-        int messages = 1000;
+        int messages = 2_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run010Actors() throws InterruptedException {
+    @OperationsPerInvocation(10_000)
+    public void run____10_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 10;
-        int messages = 1000;
+        int messages = 10_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run020Actors() throws InterruptedException {
+    @OperationsPerInvocation(20_000)
+    public void run____20_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 20;
-        int messages = 1000;
+        int messages = 20_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run030Actors() throws InterruptedException {
+    @OperationsPerInvocation(30_000)
+    public void run____30_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 30;
-        int messages = 1000;
+        int messages = 30_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run999Actors() throws InterruptedException {
+    @OperationsPerInvocation(999_000)
+    public void run___999_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 999;
-        int messages = 1000;
+        int messages = 999_000;
 
-        run(actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
     }
 
 
-    private void run(int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
-        CountDownLatch latch = new CountDownLatch(actorCount);
-        system.registerActor("END", () -> new EndActor(latch), ActorSettings.DEFAULT);
+    @Benchmark
+    @OperationsPerInvocation(50_000_000)
+    public void run_50000_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
+        int actorCount = 50_000;
+        int messages = 50_000_000;
+
+        run(actorCount, messages, LintStoneSystemFactory.create(), blackhole);
+    }
+
+
+    private void run(int actorCount, int messages, LintStoneSystem system, Blackhole blackhole) throws InterruptedException, UnregisteredRecipientException, ExecutionException {
         List<LintStoneActorAccessor> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
             actors.add(system.registerActor(TEST + i, MessageActor::new, ActorSettings.DEFAULT));
@@ -98,9 +107,9 @@ public class JmhTest {
         }
         for (int i = 0; i < actorCount; i++) {
             // finish the actors
-            actors.get(i).send("END");
+            Integer end = actors.get(i).<Integer>ask("END").get();
+            blackhole.consume(end);
         }
-        latch.await();
         system.shutDownAndWait();
     }
 
@@ -112,13 +121,6 @@ public class JmhTest {
         new Runner(opt).run();
     }
 
-    private record EndActor(CountDownLatch latch) implements LintStoneActor {
-
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            latch.countDown();
-        }
-    }
 
     private static class MessageActor implements LintStoneActor {
 
@@ -139,7 +141,7 @@ public class JmhTest {
                     }
             ).inCase(String.class, (name, reply) -> {
                 // notify to the given name, the sum
-                reply.send(name, sum);
+                reply.reply(sum);
                 // and kill yourself
                 reply.unregister();
             }).otherwise((a, b) -> System.err.println("unknown message: " + a));

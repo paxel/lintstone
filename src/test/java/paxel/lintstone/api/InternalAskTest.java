@@ -3,7 +3,7 @@ package paxel.lintstone.api;
 import org.junit.Test;
 import paxel.lintstone.api.actors.CharCount;
 import paxel.lintstone.api.actors.Distributor;
-import paxel.lintstone.api.actors.Sorter;
+import paxel.lintstone.api.actors.SorterActor;
 import paxel.lintstone.api.actors.WordCount;
 import paxel.lintstone.api.messages.EndMessage;
 
@@ -41,7 +41,7 @@ public class InternalAskTest {
         LintStoneActorAccessor dist = system.registerActor("dist", Distributor::new,  ActorSettings.DEFAULT);
         system.registerActor("wordCount", WordCount::new,  ActorSettings.DEFAULT);
         system.registerActor("charCount", CharCount::new,  ActorSettings.DEFAULT);
-        system.registerActor("sorter", Sorter::new, ActorSettings.DEFAULT);
+        system.registerActor("sorter", SorterActor::new, ActorSettings.DEFAULT);
 
         LintStoneSystem s = LintStoneSystemFactory.create();
         LintStoneActorAccessor syncedOut = s.registerActor("out", () -> mec -> mec.otherwise((o, m)->System.out.println(o)),  ActorSettings.DEFAULT);

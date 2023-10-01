@@ -18,7 +18,7 @@ public class WordGeneratorActor implements LintStoneActor {
     public record Init(Long seed) {
     }
 
-    public record Request(int sylibls) {
+    public record Request(int syllables) {
     }
 
     public record Word(String value) {
@@ -39,7 +39,7 @@ public class WordGeneratorActor implements LintStoneActor {
         if (random == null)
             reinit(0L);
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < request.sylibls(); i++) {
+        for (int i = 0; i < request.syllables(); i++) {
             stringBuilder.append(consonants.get(random.nextDouble()));
             stringBuilder.append(vocals.get(random.nextDouble()));
         }
