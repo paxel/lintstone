@@ -96,14 +96,34 @@ String v = dist.<String>ask(new EndMessage())
 
 # Benchmarks
 
+Comparison JAVA 11 GroupExecutor variant vs JAVA 21 virtual threads
+
 ```
 Benchmark                                  Mode  Cnt       Score      Error  Units
-JmhTest.run001ActorOn001Thread            thrpt    5   14807.641 ±  118.880  ops/s
-JmhTest.run002ActorOn001Thread            thrpt    5   14793.968 ±  132.940  ops/s
-JmhTest.run010ActorOn001Thread            thrpt    5   14767.468 ±  141.431  ops/s
-JmhTest.run010ActorOn010Thread            thrpt    5  122679.731 ± 2291.937  ops/s
-JmhTest.run020ActorOn020Thread            thrpt    5  165262.649 ± 9270.499  ops/s
-JmhTest.run030ActorOn020Thread            thrpt    5  164761.670 ± 5103.291  ops/s
-JmhTest.run999ActorOn010Threads           thrpt    5  110869.939 ± 1938.133  ops/s
-JmhTest.run999ActorOnWorkStealingThreads  thrpt    5    4200.800 ±  109.647  ops/s
+JmhTest.run001ActorOn001Thread            thrpt    5    14807.641 ±   118.880  ops/s
+JmhTest.run001Actors JAVA 21              thrpt    5   318438.884 ±  8725.628  ops/s
+
+JmhTest.run002ActorOn001Thread            thrpt    5    14793.968 ±   132.940  ops/s
+JmhTest.run002Actors JAVA 21              thrpt    5   514296.649 ± 23787.449  ops/s
+
+JmhTest.run010ActorOn001Thread            thrpt    5    14767.468 ±   141.431  ops/s
+JmhTest.run010ActorOn010Thread            thrpt    5   122679.731 ±  2291.937  ops/s
+JmhTest.run010Actors JAVA 21              thrpt    5  1141230.953 ± 21649.833  ops/s
+
+JmhTest.run020ActorOn020Thread            thrpt    5   165262.649 ±  9270.499  ops/s
+JmhTest.run020Actors JAVA 21              thrpt    5  1268742.526 ± 49428.590  ops/s
+
+JmhTest.run030ActorOn020Thread            thrpt    5   164761.670 ±  5103.291  ops/s
+JmhTest.run030Actors JAVA 21              thrpt    5  1268501.106 ± 93959.566  ops/s
+
+JmhTest.run999ActorOn010Threads           thrpt    5   110869.939 ±  1938.133  ops/s
+JmhTest.run999Actors JAVA 21              thrpt    5   150694.498 ±  1410.907  ops/s
+
+JmhTest.run999ActorOnWorkStealingThreads  thrpt    5     4200.800 ±  109.647  ops/s
+NA
+
 ```
+
+A big improvement performance wise with a cleaner interface to the user
+
+Welcome to the world of tomorrow
