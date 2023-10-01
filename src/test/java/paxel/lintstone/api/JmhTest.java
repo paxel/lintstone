@@ -30,86 +30,64 @@ public class JmhTest {
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run001ActorOn001Thread() throws InterruptedException {
+    public void run001Actors() throws InterruptedException {
         int threads = 1;
         int actorCount = 1;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run002ActorOn001Thread() throws InterruptedException {
+    public void run002Actors() throws InterruptedException {
         int threads = 1;
         int actorCount = 2;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run010ActorOn001Thread() throws InterruptedException {
-        int threads = 1;
+    public void run010Actors() throws InterruptedException {
         int actorCount = 10;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
+
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run010ActorOn010Thread() throws InterruptedException {
-        int threads = 10;
-        int actorCount = 10;
-        int messages = 1000;
-
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
-    }
-
-    @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run020ActorOn020Thread() throws InterruptedException {
-        int threads = 20;
+    public void run020Actors() throws InterruptedException {
         int actorCount = 20;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run030ActorOn020Thread() throws InterruptedException {
-        int threads = 20;
+    public void run030Actors() throws InterruptedException {
         int actorCount = 30;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
 
     @Benchmark
     @OperationsPerInvocation(1000)
-    public void run999ActorOn010Threads() throws InterruptedException {
-        int threads = 10;
+    public void run999Actors() throws InterruptedException {
         int actorCount = 999;
         int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
+        run(actorCount, messages, LintStoneSystemFactory.create());
     }
 
-    @Benchmark
-    @OperationsPerInvocation(1000)
-    public void run999ActorOnWorkStealingThreads() throws InterruptedException {
-        int threads = 10;
-        int actorCount = 999;
-        int messages = 1000;
 
-        run(threads, actorCount, messages, LintStoneSystemFactory.create());
-    }
-
-    private void run(int threads, int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
-        CountDownLatch latch = new CountDownLatch(threads);
+    private void run(int actorCount, int messages, LintStoneSystem system) throws InterruptedException, UnregisteredRecipientException {
+        CountDownLatch latch = new CountDownLatch(actorCount);
         system.registerActor("END", () -> new EndActor(latch), ActorSettings.DEFAULT);
         List<LintStoneActorAccessor> actors = new ArrayList<>();
         for (int i = 0; i < actorCount; i++) {
