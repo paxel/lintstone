@@ -1,6 +1,7 @@
 package paxel.lintstone.api;
 
 import org.junit.jupiter.api.Test;
+import paxel.lintstone.api.actors.SortNodeActor;
 
 import java.util.List;
 import java.util.Random;
@@ -37,6 +38,6 @@ public class ActorSortTest {
         }
 
         // stop system
-        system.shutDown();
+        system.shutDownNow();
     }
 }

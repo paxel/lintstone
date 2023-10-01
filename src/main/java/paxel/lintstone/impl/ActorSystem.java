@@ -53,13 +53,13 @@ public class ActorSystem implements LintStoneSystem {
 
     @Override
     public void shutDown() {
-        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        shutdownActors(false);
         groupingExecutor.shutdown();
     }
 
     @Override
     public void shutDownAndWait() throws InterruptedException {
-        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        shutdownActors(false);
         groupingExecutor.shutdown();
         //wait forever and a day
         groupingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
@@ -67,15 +67,21 @@ public class ActorSystem implements LintStoneSystem {
 
     @Override
     public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
-        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(false));
+        shutdownActors(false);
         groupingExecutor.shutdown();
         return groupingExecutor.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override
     public void shutDownNow() {
-        actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(true));
+        shutdownActors(true);
         groupingExecutor.shutdownNow();
+    }
+
+    private void shutdownActors(boolean now) {
+        synchronized (actors) {
+            actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(now));
+        }
     }
 
 

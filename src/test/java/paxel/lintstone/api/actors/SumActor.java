@@ -1,4 +1,8 @@
-package paxel.lintstone.api;
+package paxel.lintstone.api.actors;
+
+import paxel.lintstone.api.LintStoneActor;
+import paxel.lintstone.api.LintStoneMessageEventContext;
+import paxel.lintstone.api.messages.DieMessage;
 
 import java.util.function.Consumer;
 
@@ -14,11 +18,16 @@ public class SumActor implements LintStoneActor {
     private int expected;
     private int received;
 
+    private static void otherwise(Object o, LintStoneMessageEventContext m) {
+        System.err.println("Unknown message " + o);
+    }
+
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {
-        mec.inCase(Long.class, this::addLong)
+        mec
+                .inCase(Long.class, this::addLong)
                 .inCase(String.class, this::incExpected)
-                .otherwise((o, m) -> System.err.println("Unknown message " + o));
+                .otherwise(SumActor::otherwise);
     }
 
     private void addLong(Long num, LintStoneMessageEventContext mec) {

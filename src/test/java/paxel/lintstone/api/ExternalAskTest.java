@@ -1,12 +1,10 @@
 package paxel.lintstone.api;
 
 import org.junit.Test;
+import paxel.lintstone.api.actors.Md5Actor;
+import paxel.lintstone.api.messages.EndMessage;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -86,40 +84,4 @@ public class ExternalAskTest {
         system.shutDown();
     }
 
-    private static class Md5Actor implements LintStoneActor {
-        private MessageDigest md5;
-
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (name, m) -> this.add(name.getBytes(StandardCharsets.UTF_8))).inCase(ByteBuffer.class, (byteBuffer, m) -> {
-                if (byteBuffer.hasArray())
-                    add(byteBuffer.array());
-            }).inCase(EndMessage.class, (dmg, m) -> {
-                m.reply(getMd5String());
-                // let's die
-                m.unregister();
-            });
-        }
-
-        private Object getMd5String() {
-            byte[] digest = md5.digest();
-            Formatter f = new Formatter(new StringBuilder());
-            for (byte x :
-                    digest) {
-                f.format("%01x", x);
-            }
-            return f.toString();
-        }
-
-        private void add(byte[] bytes) {
-            if (md5 == null) {
-                try {
-                    md5 = MessageDigest.getInstance("MD5");
-                } catch (NoSuchAlgorithmException e) {
-                    // ignorable for this test
-                }
-            }
-            md5.update(bytes);
-        }
-    }
 }

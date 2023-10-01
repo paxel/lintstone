@@ -1,14 +1,16 @@
 package paxel.lintstone.api;
 
 import org.junit.Test;
+import paxel.lintstone.api.actors.CharCount;
+import paxel.lintstone.api.actors.Distributor;
+import paxel.lintstone.api.actors.Sorter;
+import paxel.lintstone.api.actors.WordCount;
+import paxel.lintstone.api.messages.EndMessage;
 
-import java.text.MessageFormat;
-import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,8 +37,7 @@ public class InternalAskTest {
     @Test
     public void testAskExternal() throws InterruptedException, ExecutionException, TimeoutException {
         LintStoneSystem system = LintStoneSystemFactory.create();
-        // the entry actor is limited to 1 message at the time input queue
-        // just to test that the messages are added even so we send faster than the actor can process (creating backpressure)
+
         LintStoneActorAccessor dist = system.registerActor("dist", Distributor::new,  ActorSettings.DEFAULT);
         system.registerActor("wordCount", WordCount::new,  ActorSettings.DEFAULT);
         system.registerActor("charCount", CharCount::new,  ActorSettings.DEFAULT);
@@ -63,75 +64,4 @@ public class InternalAskTest {
     }
 
 
-    private static class Distributor implements LintStoneActor {
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, this::send).inCase(EndMessage.class, (dmg, askContext) -> {
-                CompletableFuture<Integer> words = new CompletableFuture<>();
-                CompletableFuture<Integer> chars = new CompletableFuture<>();
-                CompletableFuture<String> sort = new CompletableFuture<>();
-                // each of these completes will be called in the thread context of this actor
-                mec.ask("wordCount", new EndMessage(), c -> c.inCase(Integer.class, (r, replyContext) -> words.complete(r)));
-                mec.ask("charCount", new EndMessage(), c -> c.inCase(Integer.class, (r, replyContext) -> chars.complete(r)));
-                mec.ask("sorter", new EndMessage(), c -> c.inCase(String.class, (r, replyContext) -> sort.complete(r)));
-
-                // when the last reply comes, the reply of the external ask is fulfilled.
-                CompletableFuture.allOf(words, chars, sort).thenApply(x -> {
-                    try {
-                        askContext.reply(MessageFormat.format("{0} words, {1} letters, {2}", words.get(), chars.get(), sort.get()));
-                    } catch (Exception e) {
-                        askContext.reply(e.getMessage());
-                    }
-                    return null;
-                });
-            });
-        }
-
-
-        private void send(String txt, LintStoneMessageEventContext mec) {
-            mec.send("wordCount", txt);
-            mec.send("charCount", txt);
-            mec.send("sorter", txt);
-        }
-    }
-
-    private static class WordCount implements LintStoneActor {
-        private int count;
-
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> {
-                int length = (int) Arrays.stream(txt.trim().split(" ")).filter(f->!f.trim().isEmpty()).count();
-                this.count += length;
-            }).inCase(EndMessage.class, (dmg, askContext) -> {
-                askContext.reply(count);
-                askContext.unregister();
-            });
-        }
-    }
-
-    private static class CharCount implements LintStoneActor {
-        private int count;
-
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> this.count += txt.replaceAll(" ", "").length()).inCase(EndMessage.class, (dmg, askContext) -> {
-                askContext.reply(count);
-                askContext.unregister();
-            });
-        }
-    }
-
-    private static class Sorter implements LintStoneActor {
-        final Set<String> words = new HashSet<>();
-
-        @Override
-        public void newMessageEvent(LintStoneMessageEventContext mec) {
-            mec.inCase(String.class, (txt, m) -> words.addAll(Arrays.stream(txt.trim().split(" ")).filter(f->!f.trim().isEmpty()).map(String::toLowerCase).collect(Collectors.toList()))).inCase(EndMessage.class, (dmg, askContext) -> {
-                ArrayList<String> list = new ArrayList<>(words);
-                Collections.sort(list);
-                askContext.reply(String.join(",", list));
-            });
-        }
-    }
 }

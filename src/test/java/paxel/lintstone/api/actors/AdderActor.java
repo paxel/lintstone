@@ -1,9 +1,15 @@
-package paxel.lintstone.api;
+package paxel.lintstone.api.actors;
+
+import paxel.lintstone.api.LintStoneActor;
+import paxel.lintstone.api.LintStoneMessageEventContext;
+import paxel.lintstone.api.messages.DieMessage;
+import paxel.lintstone.api.messages.EndMessage;
 
 public class AdderActor implements LintStoneActor {
 
     private long sum;
     private String name;
+
 
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {
@@ -11,16 +17,10 @@ public class AdderActor implements LintStoneActor {
                 .inCase(EndMessage.class, this::endSum)
                 .inCase(String.class, this::name)
                 .inCase(DieMessage.class, this::unregister)
-                .otherwise((o, m) -> System.err.println("Unknown message " + o));
+                .otherwise(this::other);
     }
 
     private void addInteger(Integer num, LintStoneMessageEventContext mec) {
-        int last = -1;
-        if (last >= num) {
-
-            // make sure that the order is correct
-            throw new IllegalStateException("Expected something bigger than " + last + " but got "+num);
-        }
         sum += num;
     }
 
@@ -35,6 +35,10 @@ public class AdderActor implements LintStoneActor {
     private void unregister(DieMessage msg, LintStoneMessageEventContext mec) {
         boolean unregister = mec.unregister();
         System.out.println("Actor " + name + " unregistered: " + unregister);
+    }
+
+    private void other(Object o, LintStoneMessageEventContext m) {
+        System.err.println("Unknown message " + o);
     }
 
 }

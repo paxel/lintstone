@@ -1,4 +1,9 @@
-package paxel.lintstone.api;
+package paxel.lintstone.api.actors;
+
+import paxel.lintstone.api.ActorSettings;
+import paxel.lintstone.api.LintStoneActor;
+import paxel.lintstone.api.LintStoneActorAccessor;
+import paxel.lintstone.api.LintStoneMessageEventContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
