@@ -37,19 +37,19 @@ public class LintStoneSystemTest {
                         final String name = "addActor" + val;
                         final LintStoneActorAccessor actor = system.registerActor(name, AdderActor::new,  ActorSettings.DEFAULT);
                         // register the actor at the sum actor
-                        sumActor.send(name);
+                        sumActor.tell(name);
                         // tell the adder his name.
-                        actor.send(name);
+                        actor.tell(name);
                         return actor;
                     })
                     // send the value to the actor
-                    .send(i);
+                    .tell(i);
         }
 
         // tell the adder, that it's finished
         final EndMessage endMessage = new EndMessage();
         for (Map.Entry<Integer, LintStoneActorAccessor> entry : actors.entrySet()) {
-            entry.getValue().send(endMessage);
+            entry.getValue().tell(endMessage);
         }
 
         // wait for the result

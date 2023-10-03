@@ -2,7 +2,6 @@ package paxel.lintstone.api;
 
 import org.junit.Test;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -33,7 +32,7 @@ public class ReplyTest {
             latch.countDown();
         }, ActorSettings.DEFAULT);
 
-        uta.send(new StartMessage());
+        uta.tell(new StartMessage());
 
         // wait for the result
         latch.await();
@@ -71,7 +70,7 @@ public class ReplyTest {
                 hp = hp - dmg;
                 if (hp < 0) {
                     System.out.println(m.getName() + " goes down");
-                    m.send("floor", m.getName());
+                    m.tell("floor", m.getName());
                 } else if (hp < 15 && healthPotions > 0) {
                     heal(m);
                 } else {
@@ -84,7 +83,7 @@ public class ReplyTest {
         private void attack(LintStoneMessageEventContext m) throws UnregisteredRecipientException {
             final Integer calcDmg = calcDmg();
             System.out.println(m.getName() + " attacks for " + calcDmg);
-            nme.send(calcDmg);
+            nme.tell(calcDmg);
         }
 
         private Integer calcDmg() {
@@ -101,7 +100,7 @@ public class ReplyTest {
             hp += heal;
             healthPotions--;
             // did not attack: no damage
-            nme.send(0);
+            nme.tell(0);
         }
 
     }

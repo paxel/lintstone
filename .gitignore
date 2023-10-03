@@ -1,3 +1,4 @@
 target
 /lintstone.iml
 /.idea/
+/src/main/asciidoc/.asciidoctor/

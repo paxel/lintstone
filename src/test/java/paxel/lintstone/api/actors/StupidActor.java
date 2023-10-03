@@ -33,14 +33,14 @@ public class StupidActor implements LintStoneActor {
             if (reRegister.exists()) {
                 // so this first message to the actor should fail and be given to the errorhandler
                 // it also should cause a FailedMessage to be returned to us, that the Message could not be processed
-                reRegister.send("Hi!");
+                reRegister.tell("Hi!");
             }
         }
         // We send a message to ourselves, that we don't support
         // the false object will end in the otherwise branch of newMessageEvent
-        mec.send(mec.getName(), Boolean.FALSE);
+        mec.tell(mec.getName(), Boolean.FALSE);
         try {
-            mec.send("Unknown Actor", "Will not be delivered");
+            mec.tell("Unknown Actor", "Will not be delivered");
             throw new IllegalStateException("Should have failed");
         } catch (UnregisteredRecipientException unregisteredRecipientException) {
             // we can't send to unknown actors
@@ -50,7 +50,7 @@ public class StupidActor implements LintStoneActor {
 
         if (!actor.exists()) {
             try {
-                actor.send("fail me");
+                actor.tell("fail me");
                 throw new IllegalStateException("Should have failed");
             } catch (UnregisteredRecipientException unregisteredRecipientException) {
             }
@@ -60,7 +60,7 @@ public class StupidActor implements LintStoneActor {
 
             boolean exists = actor.exists();
             // would throw exception if LintStoneActorAccessor is not self updating
-            actor.send("This actor reference works now: " + exists);
+            actor.tell("This actor reference works now: " + exists);
         }
     }
 
@@ -69,19 +69,19 @@ public class StupidActor implements LintStoneActor {
         System.out.println("Failed on " + go.actorName() + " because " + go.cause() + " when processing " + go.message());
 
         final LintStoneActorAccessor me = m.getActor(m.getName());
-        me.send(true);
+        me.tell(true);
         // we unregister ourselves
         m.unregister();
         if (me.exists()) {
             throw new IllegalStateException("I was just unregistered");
         }
         try {
-            me.send("will not happen");
+            me.tell("will not happen");
             throw new IllegalStateException("Should have failed");
         } catch (UnregisteredRecipientException unregisteredRecipientException) {
         }
 
         // end the test
-        m.getActor(FailingTests.STOP_ACTOR).send("stop");
+        m.getActor(FailingTests.STOP_ACTOR).tell("stop");
     }
 }

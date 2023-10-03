@@ -1,0 +1,191 @@
+# Example Project
+
+## LintStoneSystem
+
+[plantuml]
+----
+class paxel.lintstone.api.LintStoneSystemFactory {
++ {static} LintStoneSystem create()
+}
+interface paxel.lintstone.api.LintStoneSystem {
+~ LintStoneActorAccessor registerActor(String,LintStoneActorFactory,ActorSettings,Object)
+~ LintStoneActorAccessor registerActor(String,LintStoneActorFactory,ActorSettings)
+~ LintStoneActorAccessor getActor(String)
+~ void shutDown()
+~ void shutDownAndWait()
+~ boolean shutDownAndWait(Duration)
+~ void shutDownNow()
+~ boolean unregisterActor(String)
+}
+----
+
+A `LintStoneSystem` is your first step for using Actors.
+It represents the Actor Framework and also runs them.
+You create an instance via the `LintStoneSystemFactory`.
+
+[source,java]
+----
+LintStoneSystem lintStoneSystem = LintStoneSystemFactory.create();
+----
+
+The System is used to:
+
+* register Actors
+* get Actors
+* unregister Actors
+* shutdown the system
+
+## LintStoneActorAccessor
+
+[plantuml]
+----
+interface paxel.lintstone.api.LintStoneActorAccessor {
+~ void tell(Object)
+~ void tellWithBackPressure(Object,int)
+~ boolean exists()
+~ void ask(Object,ReplyHandler)
+~ CompletableFuture<F> ask(Object)
+~ int getQueuedMessagesAndReplies()
+~ long getProcessedMessages()
+~ long getProcessedReplies()
+~ String getName()
+}
+interface paxel.lintstone.api.LintStoneActorFactory {
+~ LintStoneActor create()
+}
+interface paxel.lintstone.api.ActorSettings {
+~ ActorSettings DEFAULT
+~ ErrorHandler errorHandler()
+~ {static} ActorSettingsBuilder create()
+}
+----
+
+Registering an Actor via a `LintStoneActorFactory` gives you an instance of a `LintStoneActorAccessor`.
+
+To register an Actor you need a unique name.
+This name can also be used to request a specific actor from the System.
+
+You also need a `LintStoneActorFactory` to create the Actor.
+This factory can be simply a Supplier for an existing Actor instance ( `()-> actor` ) or as in the example below, create an instance on demand.
+
+Finally, you need `ActorSettings`.
+There is a default instance available.
+Unless you want to inject your own ErrorHandler you can use that one.
+
+[source,java]
+----
+
+String name = "dictionary"; // unique name of the actor in the system
+LintStoneActorFactory factory = DictionaryActor::new; // creates an actor
+ActorSettings settings = ActorSettings.DEFAULT; // Default Settings
+
+LintStoneActorAccessor dictionary = lintStoneSystem.registerActor(name, factory, settings);
+----
+
+
+## LintStoneActor
+
+
+[plantuml]
+----
+interface paxel.lintstone.api.LintStoneActor {
+~ void newMessageEvent(LintStoneMessageEventContext)
+}
+interface paxel.lintstone.api.LintStoneMessageEventContext {
+~ TypeSafeMonad inCase(Class<T>,LintStoneEventHandler<T>)
+~ void otherwise(LintStoneEventHandler<Object>)
+~ void reply(Object)
+~ void tell(String,Object)
+~ void ask(String,Object,ReplyHandler)
+~ CompletableFuture<F> ask(String,Object)
+~ LintStoneActorAccessor getActor(String)
+~ LintStoneActorAccessor registerActor(String,LintStoneActorFactory,Object,ActorSettings)
+~ LintStoneActorAccessor registerActor(String,LintStoneActorFactory,ActorSettings)
+~ boolean unregister()
+~ String getName()
+~ boolean unregister(String)
+}
+
+----
+
+To implement an actor you need to extend the LintStoneActor interface.
+It has only a single method `newMessageEvent`.
+
+The parameter of this event is the Actors way to interact with the Actor Framework.
+
+It can:
+
+* access the message via `inCase` and `otherWise`
+* reply a message to the sender
+* tell a message to an Actor by name
+* ask a reply from an actor by name as `Future` or `ReplyHandler`
+* get an ActorAccessor by name
+* register new Actors
+* unregister other Actors
+* unregister itself
+* get its own unique name
+
+
+[source,java]
+----
+public class DictionaryActor implements LintStoneActor {
+
+    public record CreateDictionary(long seed){}
+
+    @Override
+    public void newMessageEvent(LintStoneMessageEventContext mec) {
+        mec
+                .inCase(CreateDictionary.class,this::initDictionary)
+                .otherwise(this::otherwise);
+    }
+
+    private void initDictionary(CreateDictionary createDictionary, LintStoneMessageEventContext lintStoneMessageEventContext) {
+        // the method that handles CreateDictionary messages
+    }
+
+    private void otherwise(Object o, LintStoneMessageEventContext lintStoneMessageEventContext) {
+        // the method that handles all other message types
+    }
+}
+----
+
+## Other API concepts
+
+TBD
+
+[plantuml]
+----
+interface paxel.lintstone.api.LintStoneFailedMessage {
+~ Object message()
+~ Throwable cause()
+~ String actorName()
+}
+class paxel.lintstone.api.UnregisteredRecipientException {
+}
+class paxel.lintstone.api.NoSenderException {
+}
+
+interface paxel.lintstone.api.ErrorHandler {
+~ boolean handleError(Object)
+}
+interface paxel.lintstone.api.ReplyHandler {
+~ void process(LintStoneMessageEventContext)
+}
+
+interface paxel.lintstone.api.LintStoneEventHandler {
+~ void handle(T,LintStoneMessageEventContext)
+}
+class paxel.lintstone.api.TypeSafeMonad {
+- {static} TypeSafeMonad DONE
+- Object message
+- LintStoneMessageEventContext context
++ TypeSafeMonad inCase(Class<T>,LintStoneEventHandler<T>)
++ void otherwise(LintStoneEventHandler<Object>)
+}
+
+paxel.lintstone.api.RuntimeException <|-- paxel.lintstone.api.UnregisteredRecipientException
+paxel.lintstone.api.RuntimeException <|-- paxel.lintstone.api.NoSenderException
+----
+
+
+

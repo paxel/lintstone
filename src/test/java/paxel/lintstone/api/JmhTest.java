@@ -103,7 +103,7 @@ public class JmhTest {
             actors.add(system.registerActor(TEST + i, MessageActor::new, ActorSettings.DEFAULT));
         }
         for (int i = 0; i < messages; i++) {
-            actors.get(i % actorCount).send(i);
+            actors.get(i % actorCount).tell(i);
         }
         for (int i = 0; i < actorCount; i++) {
             // finish the actors

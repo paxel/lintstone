@@ -14,7 +14,7 @@ public interface LintStoneActorAccessor {
      * @param message The message to send-
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void send(Object message) throws UnregisteredRecipientException;
+    void tell(Object message) throws UnregisteredRecipientException;
 
     /**
      * Sends a message to the Actor represented by this Access. But blocks the call until the number of messages queued
@@ -24,7 +24,7 @@ public interface LintStoneActorAccessor {
      * @param blockThreshold The number of queued messages that causes the call to block.
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void sendWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException;
+    void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException;
 
     /**
      * Retrieve if the actor is currently registered. using this does not ensure

@@ -26,12 +26,12 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
     @Override
-    public void send(Object message) throws UnregisteredRecipientException {
+    public void tell(Object message) throws UnregisteredRecipientException {
         tell(message, sender, null, null);
     }
 
     @Override
-    public void sendWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
+    public void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
         tell(message, sender, null, blockThreshold);
     }
 
@@ -74,7 +74,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
     private void updateActor() throws UnregisteredRecipientException {
-        actor = system.getActor(name)
+        actor = system.getOptionalActor(name)
                 .orElseThrow(() -> new UnregisteredRecipientException("An actor with the name " + name + " is not available"));
     }
 
@@ -82,7 +82,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     public boolean exists() {
         if (actor == null) {
             // fetch new one from system or null if none
-            actor = system.getActor(name).orElse(null);
+            actor = system.getOptionalActor(name).orElse(null);
         }
         return actor != null && actor.isValid();
     }

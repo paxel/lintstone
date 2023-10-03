@@ -25,7 +25,7 @@ public class AdderActor implements LintStoneActor {
     }
 
     private void endSum(EndMessage end, LintStoneMessageEventContext mec) {
-        mec.getActor("sumActor").send(sum);
+        mec.getActor("sumActor").tell(sum);
     }
 
     private void name(String msg, LintStoneMessageEventContext mec) {

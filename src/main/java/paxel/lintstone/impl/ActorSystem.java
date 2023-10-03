@@ -28,6 +28,13 @@ public class ActorSystem implements LintStoneSystem {
         return registerActor(name, factory, null, settings, null);
     }
 
+    @Override
+    public LintStoneActorAccessor getActor(String name) {
+        synchronized (actors) {
+            return new SelfUpdatingActorAccessor(name, actors.get(name), this, null);
+        }
+    }
+
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, ActorSettings settings, Object initMessage) {
         SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
         sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
@@ -98,7 +105,7 @@ public class ActorSystem implements LintStoneSystem {
         }
     }
 
-    Optional<Actor> getActor(String name) {
+    Optional<Actor> getOptionalActor(String name) {
         synchronized (actors) {
             return Optional.ofNullable(actors.get(name));
         }

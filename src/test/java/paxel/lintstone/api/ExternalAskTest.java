@@ -26,9 +26,9 @@ public class ExternalAskTest {
         LintStoneSystem system = LintStoneSystemFactory.create();
         LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
-        md5.send("This is my test string");
+        md5.tell("This is my test string");
         for (int i = 0; i < 1000; i++) {
-            md5.send(ByteBuffer.wrap(new byte[i]));
+            md5.tell(ByteBuffer.wrap(new byte[i]));
         }
         String result = md5.<String>ask(new EndMessage()).get();
 
@@ -46,9 +46,9 @@ public class ExternalAskTest {
         LintStoneSystem system = LintStoneSystemFactory.create();
         LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
-        md5.send("This is my test string");
+        md5.tell("This is my test string");
         for (int i = 0; i < 1000; i++) {
-            md5.send(ByteBuffer.wrap(new byte[i]));
+            md5.tell(ByteBuffer.wrap(new byte[i]));
         }
 
         // wrong type cast, but pit it in Object, to avoid ClassCastException
@@ -64,9 +64,9 @@ public class ExternalAskTest {
         LintStoneActorAccessor md5 = system.registerActor("md5", Md5Actor::new, ActorSettings.DEFAULT);
 
         AtomicReference<String> result = new AtomicReference<>();
-        md5.send("This is my test string");
+        md5.tell("This is my test string");
         for (int i = 0; i < 1000; i++) {
-            md5.send(ByteBuffer.wrap(new byte[i]));
+            md5.tell(ByteBuffer.wrap(new byte[i]));
         }
         md5.ask(new EndMessage(), mec -> mec.inCase(String.class, (x, m) -> {
             result.set(String.valueOf(x));

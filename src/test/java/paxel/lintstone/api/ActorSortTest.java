@@ -23,7 +23,7 @@ public class ActorSortTest {
         Random random = new Random(1007);
         int number = 10_000;
         for (int i = 0; i < number; i++) {
-            root.sendWithBackPressure(random.nextLong(), 100);
+            root.tellWithBackPressure(random.nextLong(), 100);
         }
 
         // request the sorted list from the root actor. It will also clean up the actor System

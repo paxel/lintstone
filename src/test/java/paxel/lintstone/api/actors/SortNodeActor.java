@@ -68,13 +68,13 @@ public class SortNodeActor implements LintStoneActor {
             if (this.left == null)
                 this.left = lintStoneMessageEventContext.registerActor(name + "<", () -> new SortNodeActor(name + "<"),value, ActorSettings.DEFAULT);
             else
-                left.send(value);
+                left.tell(value);
         } else {
             // bigger than us. delegate to right actor
             if (this.right == null)
                 this.right = lintStoneMessageEventContext.registerActor(name + ">", () -> new SortNodeActor(name + ">"), value, ActorSettings.DEFAULT);
             else
-                right.send(value);
+                right.tell(value);
         }
     }
 

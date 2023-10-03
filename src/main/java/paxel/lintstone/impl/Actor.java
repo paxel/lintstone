@@ -49,7 +49,7 @@ class Actor {
                 actorInstance.newMessageEvent(mec);
             } catch (Exception e) {
                 if (sender != null) {
-                    sender.send(new FailedMessage(message, e, name));
+                    sender.tell(new FailedMessage(message, e, name));
                 } else {
                     LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
                 }

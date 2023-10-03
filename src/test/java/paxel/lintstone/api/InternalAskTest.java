@@ -47,7 +47,7 @@ public class InternalAskTest {
         LintStoneActorAccessor syncedOut = s.registerActor("out", () -> mec -> mec.otherwise((o, m)->System.out.println(o)),  ActorSettings.DEFAULT);
 
         for (String text : data) {
-            dist.send(text);
+            dist.tell(text);
         }
         dist.ask(new EndMessage(), replyMec -> replyMec.inCase(String.class, (reply, ignored) -> {
             result.complete(reply);

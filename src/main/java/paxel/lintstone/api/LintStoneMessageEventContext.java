@@ -56,7 +56,7 @@ public interface LintStoneMessageEventContext {
      * @throws UnregisteredRecipientException if there is no actor with that
      *                                        name.
      */
-    void send(String name, Object msg) throws UnregisteredRecipientException;
+    void tell(String name, Object msg) throws UnregisteredRecipientException;
 
     /**
      * Sends the message to the actor with the registered name.

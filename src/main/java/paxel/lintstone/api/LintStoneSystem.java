@@ -32,6 +32,14 @@ public interface LintStoneSystem {
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);
 
     /**
+     * This retrieves an{@link LintStoneActorAccessor} for the given name.
+     *
+     * @param name The name of the actor. The name must be unique in the system.
+     * @return The {@link LintStoneActorAccessor} object
+     */
+    LintStoneActorAccessor getActor(String name);
+
+    /**
      * This will stop the executor in the system after all messages are
      * processed. The method returns immediately. That does not mean, that all
      * messages are processed on return.

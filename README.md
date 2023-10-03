@@ -34,7 +34,7 @@ the system creates the actors
 ```java
 LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), ActorSettings.DEFAULT);
 ...
-fileCollector.send(FileCollector.fileMessage(root, readOnly));
+fileCollector.tell(FileCollector.fileMessage(root, readOnly));
 ```
 () -> new FileCollector(cfg) is a factory for creating a FileCollector Actor.
 A FileMessage is created and sent to the actor.
@@ -64,7 +64,7 @@ The message is enqueued and eventually processed by the actor instance
             final LintStoneActorAccess actor = actors.computeIfAbsent(length, k -> {
                 return m.registerActor("counter-" + length, () -> new FileComparator(length), ActorSettings.DEFAULT);
             });
-            actor.send(fileMessage(f, readOnly));
+            actor.tell(fileMessage(f, readOnly));
         }
     }
 ```
@@ -84,7 +84,7 @@ This is a good way to get the result from the system in case of a multithreaded 
 ```java
 
 for (String text : data) {
-    dist.send(text);
+    dist.tell(text);
 }
 
 //finally ask for result

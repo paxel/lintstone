@@ -39,8 +39,8 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public void send(String name, Object msg) throws UnregisteredRecipientException {
-        Optional<Actor> actor = actorSystem.getActor(name);
+    public void tell(String name, Object msg) throws UnregisteredRecipientException {
+        Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
@@ -49,7 +49,7 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     @Override
     public void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException {
-        Optional<Actor> actor = actorSystem.getActor(name);
+        Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
@@ -58,7 +58,7 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     @Override
     public <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException {
-        Optional<Actor> actor = actorSystem.getActor(name);
+        Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }

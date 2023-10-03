@@ -18,9 +18,9 @@ public class Distributor implements LintStoneActor {
 
 
     private void send(String txt, LintStoneMessageEventContext mec) {
-        mec.send("wordCount", txt);
-        mec.send("charCount", txt);
-        mec.send("sorter", txt);
+        mec.tell("wordCount", txt);
+        mec.tell("charCount", txt);
+        mec.tell("sorter", txt);
     }
 
     private void handleEnd(EndMessage dmg, LintStoneMessageEventContext askContext) {
