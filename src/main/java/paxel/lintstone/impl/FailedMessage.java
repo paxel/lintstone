@@ -4,6 +4,11 @@ import paxel.lintstone.api.LintStoneFailedMessage;
 
 import java.util.Objects;
 
+/**
+ * Represents a failed message in the framework.
+ * This class implements the LintStoneFailedMessage interface.
+ * It contains the failed message, the cause of the failure, and the name of the actor where the failure occurred.
+ */
 public record FailedMessage(Object message, Throwable cause, String actorName) implements LintStoneFailedMessage {
 
     @Override

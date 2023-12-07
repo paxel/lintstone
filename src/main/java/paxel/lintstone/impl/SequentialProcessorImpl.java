@@ -11,6 +11,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static paxel.lintstone.impl.SequentialProcessorImpl.RunStatus.*;
 
+/**
+ * SequentialProcessorImpl is an implementation of the SequentialProcessor interface for managing sequential processing of Runnables.
+ */
 public class SequentialProcessorImpl implements SequentialProcessor {
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -168,7 +171,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
 
     enum RunStatus {
-        ACTIVE, STOPPED, ABORT;
+        ACTIVE, STOPPED, ABORT
     }
 
 }

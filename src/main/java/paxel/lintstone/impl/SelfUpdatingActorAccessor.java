@@ -7,8 +7,9 @@ import paxel.lintstone.api.UnregisteredRecipientException;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * This ActorAccess will try to fetch a new instance of an actor in case the
- * current one becomes invalid.
+ * The SelfUpdatingActorAccessor class is an implementation of the LintStoneActorAccessor interface.
+ * It provides the ability to send messages to an actor, handle responses to ask() requests,
+ * and retrieve information about the actor's status and statistics.
  */
 public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
 
@@ -25,11 +26,26 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
         this.sender = sender;
     }
 
+    /**
+     * Sends a message to an actor for processing.
+     *
+     * @param message The message to send.
+     * @throws UnregisteredRecipientException If the recipient actor is not registered.
+     */
     @Override
     public void tell(Object message) throws UnregisteredRecipientException {
         tell(message, sender, null, null);
     }
 
+    /**
+     * Sends a message to the Actor represented by this Access. But blocks the call until the number
+     * of messages queued is less than the given threshold. If someone else is sending messages to the actor,
+     * this call might block forever.
+     *
+     * @param message The message to send.
+     * @param blockThreshold The number of queued messages that causes the call to block.
+     * @throws UnregisteredRecipientException in case the actor does not exist.
+     */
     @Override
     public void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
         tell(message, sender, null, blockThreshold);
@@ -55,10 +71,26 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
         }
     }
 
+    /**
+     * Sends a message to an actor for processing.
+     *
+     * @param message The message to send.
+     * @param sender  The SelfUpdatingActorAccessor of the sender.
+     * @throws UnregisteredRecipientException If the recipient actor is not registered.
+     */
     public void send(Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
         tell(message, sender, null, null);
     }
 
+    /**
+     * Sends a message to an actor for processing.
+     *
+     * @param message        The message to be sent.
+     * @param sender         The SelfUpdatingActorAccessor of the sender.
+     * @param replyHandler   The handler for the reply. If null, the message is sent to the sender without relation to the previous message.
+     * @param blockThreshold The threshold for back pressure. If null, the message is added to the sequential processor without back pressure.
+     * @throws UnregisteredRecipientException If the recipient actor is not registered.
+     */
     private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
@@ -78,6 +110,11 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
                 .orElseThrow(() -> new UnregisteredRecipientException("An actor with the name " + name + " is not available"));
     }
 
+    /**
+     * Checks if the actor represented by this accessor exists and is valid.
+     *
+     * @return true if the actor exists and is valid, false otherwise.
+     */
     @Override
     public boolean exists() {
         if (actor == null) {
@@ -87,12 +124,27 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
         return actor != null && actor.isValid();
     }
 
+    /**
+     * Sends a message to the actor for processing and provides a handler for the reply.
+     *
+     * @param message      The message to send.
+     * @param replyHandler The handler for the reply.
+     * @throws UnregisteredRecipientException If the recipient actor is not registered.
+     */
     @Override
     public void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         // replyHandler is required, therefore not Optional.ofNullable
         tell(message, sender, replyHandler, null);
     }
 
+    /**
+     * Sends a message to an actor for processing and provides a {@link CompletableFuture} for the reply.
+     *
+     * @param message the Message for the actor
+     * @param <F> the type of the expected reply
+     * @return a {@link CompletableFuture} that represents the result of the ask operation. It will be completed in the context of the asked actor.
+     * @throws UnregisteredRecipientException if the recipient actor is not registered
+     */
     @Override
     public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
         CompletableFuture<F> result = new CompletableFuture<>();
@@ -107,21 +159,41 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
 
+    /**
+     * Returns the number of messages currently queued in the actor.
+     *
+     * @return The number of queued messages.
+     */
     @Override
     public int getQueuedMessagesAndReplies() {
         return actor.getQueued();
     }
 
+    /**
+     * Returns the number of messages processed by the actor.
+     *
+     * @return The number of processed messages.
+     */
     @Override
     public long getProcessedMessages() {
         return actor.getTotalMessages();
     }
 
+    /**
+     * Returns the number of processed replies to ask() requests.
+     *
+     * @return The number of processed replies.
+     */
     @Override
     public long getProcessedReplies() {
         return actor.getTotalReplies();
     }
 
+    /**
+     * Returns the name of the actor.
+     *
+     * @return The name of the actor as a String.
+     */
     @Override
     public String getName() {
         return name;

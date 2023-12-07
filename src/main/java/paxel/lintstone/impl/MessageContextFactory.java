@@ -3,18 +3,16 @@ package paxel.lintstone.impl;
 import java.util.function.BiConsumer;
 
 /**
- * Constructs MessageContexts for dedicated calls, that stay valid forever.
- * This is needed to use the ask context inside the reply handler.
+ * The {@code MessageContextFactory} class represents a factory for creating {@link MessageContext} objects.
+ * It provides a method to construct an immutable {@link MessageContext} using the given parameters.
  */
 public class MessageContextFactory {
     private final ActorSystem actorSystem;
     private final SelfUpdatingActorAccessor self;
 
     /**
-     * The factory is created with the actorSystem and the current actor access.
-     *
-     * @param actorSystem The system.
-     * @param self        the current actor access.
+     * The {@code MessageContextFactory} class represents a factory for creating {@link MessageContext} objects.
+     * It provides a method to construct an immutable {@link MessageContext} using the given parameters.
      */
     public MessageContextFactory(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
@@ -22,11 +20,11 @@ public class MessageContextFactory {
     }
 
     /**
-     * Constructs an immutable MessageContext.
+     * Creates a new {@link MessageContext} object with the given message and reply handler.
      *
-     * @param message      The message of the context.
-     * @param replyHandler The reply handler for the reply method of the context.
-     * @return The MessageContext.
+     * @param message      The message to be processed by the actor system.
+     * @param replyHandler The handler to be invoked when a reply is received.
+     * @return The newly created MessageContext object.
      */
     public MessageContext create(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         return new MessageContext(message, actorSystem, self, replyHandler);
