@@ -10,7 +10,7 @@ public interface LintStoneMessageEventContext {
 
     /**
      * The context executes the given consumer with the message object, if it is
-     * an instance of the given class. Otherwise nothing happens. If any inCase
+     * an instance of the given class. Otherwise, nothing happens. If any inCase
      * method matched, no other inCase method nor the otherwise method will be
      * executed.
      * <p>
