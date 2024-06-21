@@ -22,7 +22,7 @@ public class FailingTests {
     public static final String GATEWAY = "gateway";
     public static final String STOP_ACTOR = "end-processor";
     public static final String FAILING = "failing";
-    public static final String NOT_EXISTANT = "no";
+    public static final String NOT_EXISTENT = "no";
     final CountDownLatch latch = new CountDownLatch(1);
 
     public FailingTests() {
@@ -79,7 +79,7 @@ public class FailingTests {
         String echo = echoActor.<String>ask("please tell me").get();
         assertThat(echo, is("echo"));
 
-        // the first try should have created a message here
+        // the first try should have created a message here,
         // but currently it's just a log message
         assertThat(errorMessage.size(), is(0));
 

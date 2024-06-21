@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 public class WordGeneratorActor implements LintStoneActor {
 
-    private Logger log = Logger.getLogger(this.getClass().getName());
+    private final Logger log = Logger.getLogger(this.getClass().getName());
 
     private Snippets consonants;
     private Snippets vocals;

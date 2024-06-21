@@ -16,7 +16,7 @@ public class Snippets {
         }
     }
 
-    List<WeightedSnippet> snippets = new ArrayList<>();
+    final List<WeightedSnippet> snippets = new ArrayList<>();
 
     public String get(double v) {
         int index = (int) (v * current);

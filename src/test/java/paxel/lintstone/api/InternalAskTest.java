@@ -49,9 +49,7 @@ public class InternalAskTest {
         for (String text : data) {
             dist.tell(text);
         }
-        dist.ask(new EndMessage(), replyMec -> replyMec.inCase(String.class, (reply, ignored) -> {
-            result.complete(reply);
-        }));
+        dist.ask(new EndMessage(), replyMec -> replyMec.inCase(String.class, (reply, ignored) -> result.complete(reply)));
 
         Object v = result.get(1, TimeUnit.MINUTES);
 

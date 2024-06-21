@@ -47,7 +47,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     }
 
     @Override
-    public boolean addWithBackPressure(Runnable runnable, Integer blockThreshold) {
+    public boolean addWithBackPressure(Runnable runnable, int blockThreshold) throws InterruptedException {
         try {
             lock.lock();
 
@@ -55,13 +55,9 @@ public class SequentialProcessorImpl implements SequentialProcessor {
                 if (status.get() != ACTIVE) {
                     return false;
                 }
-                try {
                     // Wait for the queue size to be less than the threshold.
                     // If two sources add to this processor, this might block forever
-                    backPressure.await();
-                } catch (InterruptedException e) {
-                    Unsafe.getUnsafe().throwException(e);
-                }
+                backPressure.await();
             }
             queuedRunnables.add(runnable);
             // wake up the run() method, in case it was waiting for a job
@@ -116,7 +112,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         try {
 
             for (; ; ) {
-                Runnable runnable = null;
+                Runnable runnable;
                 try {
                     lock.lock();
                     runnable = queuedRunnables.poll();
@@ -141,7 +137,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
                 } finally {
                     lock.unlock();
                 }
-                // run outside of the lock, in case the process wants to add a message to itself :D
+                // run outside the lock, in case the process wants to add a message to itself :D
                 if (runnable != null)
                     try {
                         runnable.run();
@@ -168,7 +164,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
 
     enum RunStatus {
-        ACTIVE, STOPPED, ABORT;
+        ACTIVE, STOPPED, ABORT
     }
 
 }

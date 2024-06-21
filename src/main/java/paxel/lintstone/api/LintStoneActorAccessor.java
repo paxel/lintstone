@@ -24,7 +24,7 @@ public interface LintStoneActorAccessor {
      * @param blockThreshold The number of queued messages that causes the call to block.
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException;
+    void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException;
 
     /**
      * Retrieve if the actor is currently registered. using this does not ensure
@@ -52,7 +52,7 @@ public interface LintStoneActorAccessor {
 
     /**
      * A convenient {@link #ask(Object, ReplyHandler)} that returns and completes a {@link CompletableFuture} once, if the replied type is correct.
-     * Otherwise finishes exceptional with a {@link ClassCastException}
+     * Otherwise, finishes exceptional with a {@link ClassCastException}
      *
      * @param message the Message for the actor
      * @param <F>     The type of the expected reply

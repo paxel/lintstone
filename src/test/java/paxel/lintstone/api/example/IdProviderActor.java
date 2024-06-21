@@ -8,10 +8,10 @@ import java.util.logging.Logger;
 
 public class IdProviderActor implements LintStoneActor {
 
-    private Logger log = Logger.getLogger(this.getClass().getName());
+    private final Logger log = Logger.getLogger(this.getClass().getName());
     private int nextId = 0;
-    private LinkedList<Integer> removed = new LinkedList<>();
-    private Map<String, Integer> ids = new HashMap<>();
+    private final LinkedList<Integer> removed = new LinkedList<>();
+    private final Map<String, Integer> ids = new HashMap<>();
 
     public record AddText(String value) {
     }
@@ -35,14 +35,14 @@ public class IdProviderActor implements LintStoneActor {
         mec.inCase(AddText.class, this::cacheText)
                 .inCase(RemoveText.class, this::removeText)
                 .inCase(SizeRequest.class, this::size)
-                .otherwise(this::unkownMessage);
+                .otherwise(this::unknownMessage);
     }
 
     private void size(SizeRequest sizeRequest, LintStoneMessageEventContext lintStoneMessageEventContext) {
         lintStoneMessageEventContext.reply(new SizeResponse(ids.size(), nextId));
     }
 
-    private void unkownMessage(Object o, LintStoneMessageEventContext lintStoneMessageEventContext) {
+    private void unknownMessage(Object o, LintStoneMessageEventContext lintStoneMessageEventContext) {
         log.severe("Unsupported message received: " + o.getClass() + ": <" + o + ">");
     }
 

@@ -19,7 +19,7 @@ public class StupidActor implements LintStoneActor {
 
     private void handleString(String go, LintStoneMessageEventContext mec) {
         LintStoneActorAccessor registered = mec.registerActor(FailingTests.FAILING, () -> m -> {
-            // this temporay actor will fail with each message that it receives
+            // this temporary actor will fail with each message that it receives
             throw new IllegalArgumentException("Go away");
         }, ActorSettings.DEFAULT);
 
@@ -46,7 +46,7 @@ public class StupidActor implements LintStoneActor {
             // we can't send to unknown actors
         }
 
-        LintStoneActorAccessor actor = mec.getActor(FailingTests.NOT_EXISTANT);
+        LintStoneActorAccessor actor = mec.getActor(FailingTests.NOT_EXISTENT);
 
         if (!actor.exists()) {
             try {
@@ -55,7 +55,7 @@ public class StupidActor implements LintStoneActor {
             } catch (UnregisteredRecipientException unregisteredRecipientException) {
             }
             // register an actor with that name
-            mec.registerActor(FailingTests.NOT_EXISTANT, () -> a -> {
+            mec.registerActor(FailingTests.NOT_EXISTENT, () -> a -> {
             }, ActorSettings.DEFAULT);
 
             boolean exists = actor.exists();

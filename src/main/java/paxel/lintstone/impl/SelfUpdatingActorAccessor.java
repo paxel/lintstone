@@ -15,7 +15,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     private final SelfUpdatingActorAccessor sender;
     private final String name;
     private final ActorSystem system;
-    // not volatile as we expect to be used singlethreaded
+    // not volatile as we expect to be used single-threaded
     private Actor actor;
 
     SelfUpdatingActorAccessor(String name, Actor actor, ActorSystem system, SelfUpdatingActorAccessor sender) {
@@ -27,11 +27,11 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
 
     @Override
     public void tell(Object message) throws UnregisteredRecipientException {
-        tell(message, sender, null, null);
+        tell(message, sender, null);
     }
 
     @Override
-    public void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException {
+    public void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         tell(message, sender, null, blockThreshold);
     }
 
@@ -56,10 +56,10 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
     public void send(Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
-        tell(message, sender, null, null);
+        tell(message, sender, null);
     }
 
-    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
+    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         if (actor == null) {
             updateActor();
         }
@@ -72,6 +72,21 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
             actor.send(message, sender, replyHandler, blockThreshold);
         }
     }
+
+    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
+        if (actor == null) {
+            updateActor();
+        }
+        try {
+            actor.send(message, sender, replyHandler);
+        } catch (UnregisteredRecipientException ignoredOnce) {
+            actor = null;
+            updateActor();
+            // second try throws the exception to the outside, in case the actor provided was already unregistered.
+            actor.send(message, sender, replyHandler);
+        }
+    }
+
 
     private void updateActor() throws UnregisteredRecipientException {
         actor = system.getOptionalActor(name)
@@ -90,7 +105,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     @Override
     public void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         // replyHandler is required, therefore not Optional.ofNullable
-        tell(message, sender, replyHandler, null);
+        tell(message, sender, replyHandler);
     }
 
     @Override
@@ -102,7 +117,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
             } catch (Exception e) {
                 result.completeExceptionally(e);
             }
-        }), null);
+        }));
         return result;
     }
 

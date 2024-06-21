@@ -44,7 +44,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, self, null, null);
+        actor.get().send(msg, self, null);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MessageContext implements LintStoneMessageEventContext {
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
-        actor.get().send(msg, self, handler, null);
+        actor.get().send(msg, self, handler);
     }
 
     @Override
@@ -69,14 +69,14 @@ public class MessageContext implements LintStoneMessageEventContext {
             } catch (Exception e) {
                 result.completeExceptionally(e);
             }
-        }), null);
+        }));
         return result;
     }
 
 
     @Override
     public LintStoneActorAccessor getActor(String name) {
-        // give a empty ref, that is filled on demand.
+        // give an empty ref, that is filled on demand.
         return new SelfUpdatingActorAccessor(name, null, actorSystem, self);
     }
 

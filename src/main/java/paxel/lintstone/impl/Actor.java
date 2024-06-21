@@ -1,6 +1,9 @@
 package paxel.lintstone.impl;
 
-import paxel.lintstone.api.*;
+import paxel.lintstone.api.LintStoneActor;
+import paxel.lintstone.api.NoSenderException;
+import paxel.lintstone.api.ReplyHandler;
+import paxel.lintstone.api.UnregisteredRecipientException;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -35,12 +38,29 @@ class Actor {
         return registered;
     }
 
-    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException {
+    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
 
+        Runnable runnable = createRunnable(message, sender, replyHandler);
+        sequentialProcessor.add(runnable);
+        totalMessages.incrementAndGet();
+    }
 
+    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
+        if (!registered) {
+            throw new UnregisteredRecipientException("Actor " + name + " is not registered");
+        }
+
+        Runnable runnable = createRunnable(message, sender, replyHandler);
+        if (!sequentialProcessor.addWithBackPressure(runnable, blockThreshold)) {
+            throw new IllegalStateException("The sequential processor rejected the message.");
+        }
+        totalMessages.incrementAndGet();
+    }
+
+    private Runnable createRunnable(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
         Runnable runnable = () -> {
             // create mec and delegate replies to our handleReply method
             MessageContext mec = messageContextFactory.create(message, (msg, self) -> this.handleReply(msg, self, sender, replyHandler));
@@ -56,14 +76,7 @@ class Actor {
             }
             // TODO: catch exception. introduce error handler.
         };
-        if (blockThreshold == null) {
-            sequentialProcessor.add(runnable);
-        } else {
-            if (!sequentialProcessor.addWithBackPressure(runnable, blockThreshold)) {
-                throw new IllegalStateException("The sequential processor rejected the message.");
-            }
-        }
-        totalMessages.incrementAndGet();
+        return runnable;
     }
 
     /**
@@ -74,7 +87,7 @@ class Actor {
      * @param replyHandler The handler for the reply.
      *                     If this is null, we just send the msg to the sender.
      *                     The sender will receive this message in no relation to the previous msg he sent.
-     *                     If the replyHandler is given, the relation between msg and reply is well defined.
+     *                     If the replyHandler is given, the relation between msg and reply is well-defined.
      *                     All reply during the handling of an ask are delegated to the replyHandler.
      */
     private void handleReply(Object reply, SelfUpdatingActorAccessor self, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
