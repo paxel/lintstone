@@ -6,7 +6,7 @@ There is no Thread Thlintstone. Lintstone is a simple actor framework. nough sai
         <dependency>
             <groupId>io.github.paxel</groupId>
             <artifactId>lintstone-actor-system</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
 ```
 # How to use it?
