@@ -24,13 +24,13 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> consumer) {
-        return new TypeSafeMonad(message, this).inCase(clazz, consumer);
+    public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> consumer) {
+        return new MessageAccess(message, this).inCase(clazz, consumer);
     }
 
     @Override
     public void otherwise(LintStoneEventHandler<Object> catchAll) {
-        new TypeSafeMonad(message, this).otherwise(catchAll);
+        new MessageAccess(message, this).otherwise(catchAll);
     }
 
     @Override

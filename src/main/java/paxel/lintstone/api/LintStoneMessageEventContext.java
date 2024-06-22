@@ -25,7 +25,7 @@ public interface LintStoneMessageEventContext {
      * @param consumer The consumer of messages of the class.
      * @return the context itself
      */
-    <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
+    <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
 
     /**
      * Is executed if no

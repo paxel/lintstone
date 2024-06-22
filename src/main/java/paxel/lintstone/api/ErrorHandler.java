@@ -2,5 +2,15 @@ package paxel.lintstone.api;
 
 @FunctionalInterface
 public interface ErrorHandler {
-    boolean handleError(Object a);
+
+    /**
+     * This Errorhandler is called whenever an Exception is caused by an Actor.
+     * The handler decides if the Actor should continue {@link ErrorHandlerDecision#CONTINUE} or
+     * abort processing {@link ErrorHandlerDecision#ABORT}.
+     *
+     * @param exception the Exception caught by the {@link paxel.lintstone.impl.SequentialProcessor}
+     * @return The decision of the ErrorHandler
+     */
+    ErrorHandlerDecision handleError(Exception exception);
+
 }

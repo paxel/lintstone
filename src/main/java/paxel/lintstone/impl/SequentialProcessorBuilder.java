@@ -1,12 +1,13 @@
 package paxel.lintstone.impl;
 
 import paxel.lintstone.api.ErrorHandler;
+import paxel.lintstone.api.ErrorHandlerDecision;
 
 import java.util.concurrent.ExecutorService;
 
 public class SequentialProcessorBuilder {
     private final ExecutorService executorService;
-    private ErrorHandler errorHandler = err -> true;
+    private ErrorHandler errorHandler = err -> ErrorHandlerDecision.CONTINUE;
 
     public SequentialProcessorBuilder(ExecutorService executorService) {
 

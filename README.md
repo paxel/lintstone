@@ -92,7 +92,24 @@ for (String text : data) {
 String v = dist.<String>ask(new EndMessage())
                .get(1, TimeUnit.MINUTES);
 ```
+## Usage with backpressure
 
+In some situations you create too many events and want to prevent to flood the system.
+Therefore the tellWithBackPressure method was introduced.
+It blocks the tell until the unprocessed message number is less than the given value.
+
+```java
+
+for (String text : data) {
+    dist.tellWithBackPressure(text,1_000_000);
+}
+
+```
+
+There is no ask with BackPressure (yet).
+Ask should be used at the end of batch and not in mass, because it is less effective
+
+Be aware that if you send messages with backpressure in a circle you might cause deadlocks!
 
 # Benchmarks
 

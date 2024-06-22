@@ -175,7 +175,7 @@ interface paxel.lintstone.api.ReplyHandler {
 interface paxel.lintstone.api.LintStoneEventHandler {
 ~ void handle(T,LintStoneMessageEventContext)
 }
-class paxel.lintstone.api.TypeSafeMonad {
+class paxel.lintstone.api.MessageAccess {
 - {static} TypeSafeMonad DONE
 - Object message
 - LintStoneMessageEventContext context

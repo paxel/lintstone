@@ -1,7 +1,7 @@
 package paxel.lintstone.impl;
 
 import paxel.lintstone.api.ErrorHandler;
-import sun.misc.Unsafe;
+import paxel.lintstone.api.ErrorHandlerDecision;
 
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -110,55 +110,84 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
     private void run() {
         try {
+            runMessages();
+        } finally {
+            status.set(STOPPED);
+        }
+    }
 
+    private void runMessages() {
+        for (; ; ) {
+            // Poll blocks until a message is available. If null is returned we should stop
+            Runnable runnable = poll();
+            if (runnable == null) {
+                break;
+            }
+            runNextMessage(runnable);
+        }
+    }
+
+    private Runnable poll() {
+        try {
+            lock.lock();
             for (; ; ) {
-                Runnable runnable;
+                Runnable runnable = queuedRunnables.poll();
+                if (!checkRunnable(runnable)) {
+                    // There is no Runnable and there will never be one again.
+                    return null;
+                }
+                //It is valid. So if it is not null we use it. Or retry.
+                if (runnable != null) {
+                    return runnable;
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    private boolean checkRunnable(Runnable runnable) {
+        if (status.get() == ABORT)
+            // we should not be running anymore
+            return false;
+        if (runnable == null) {
+            if (endGracefully.get()) {
+                // end the Thread. we will never see another runnable
+                return false;
+            }
+            try {
+                // Set this Thread to inactive until a message is received
+                empty.await();
+                return true;
+            } catch (InterruptedException e) {
+                // End this Thread
+                return false;
+            }
+        } else {
+            // we pulled a job from queue, so notify the backpressure threads
+            backPressure.signalAll();
+            // process the next message / response
+            return true;
+        }
+    }
+
+    private void runNextMessage(Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            if (errorHandler.handleError(e) != ErrorHandlerDecision.CONTINUE) {
+                // errorhandler says: give up
+                status.set(ABORT);
                 try {
+                    // flush jobs and unlock blocked
                     lock.lock();
-                    runnable = queuedRunnables.poll();
-                    if (status.get() == ABORT)
-                        // we should not be running anymore
-                        break;
-                    if (runnable == null) {
-                        if (endGracefully.get())
-                            // end the Thread. we will never see another runnable
-                            break;
-                        try {
-                            // Thread is idle until a job is added
-                            empty.await();
-                        } catch (InterruptedException e) {
-                            Unsafe.getUnsafe().throwException(e);
-                        }
-                    } else {
-                        // we pulled a job from queue, so notify the backpressure threads
-                        backPressure.signalAll();
-                        // process the next message / response
-                    }
+                    queuedRunnables.clear();
+                    backPressure.signalAll();
                 } finally {
                     lock.unlock();
                 }
-                // run outside the lock, in case the process wants to add a message to itself :D
-                if (runnable != null)
-                    try {
-                        runnable.run();
-                    } catch (Exception e) {
-                        if (!errorHandler.handleError(e)) {
-                            // errorhandler says: give up
-                            status.set(ABORT);
-                            try {
-                                // flush jobs and unlock blocked
-                                lock.lock();
-                                queuedRunnables.clear();
-                                backPressure.signalAll();
-                            } finally {
-                                lock.unlock();
-                            }
-                        }
-                    }
-
             }
-        } finally {
-            status.set(STOPPED);
         }
     }
 
@@ -166,5 +195,4 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     enum RunStatus {
         ACTIVE, STOPPED, ABORT
     }
-
 }

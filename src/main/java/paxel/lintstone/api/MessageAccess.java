@@ -3,10 +3,10 @@ package paxel.lintstone.api;
 /**
  * This class provides access to the message or the reply.
  */
-public class TypeSafeMonad {
-    private static final TypeSafeMonad DONE = new TypeSafeMonad(null, null) {
+public class MessageAccess {
+    private static final MessageAccess DONE = new MessageAccess(null, null) {
         @Override
-        public <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
+        public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
             return this;
         }
 
@@ -18,7 +18,7 @@ public class TypeSafeMonad {
     private final Object message;
     private final LintStoneMessageEventContext context;
 
-    public TypeSafeMonad(Object message, LintStoneMessageEventContext context) {
+    public MessageAccess(Object message, LintStoneMessageEventContext context) {
         this.message = message;
         this.context = context;
     }
@@ -32,7 +32,7 @@ public class TypeSafeMonad {
      * @param <T>                   The type.
      * @return A Monad.
      */
-    public <T> TypeSafeMonad inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
+    public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
         if (clazz.isAssignableFrom(message.getClass())) {
             lintStoneEventHandler.handle(clazz.cast(message), context);
             return DONE;

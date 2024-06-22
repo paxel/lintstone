@@ -2,6 +2,7 @@ package paxel.lintstone.api;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import paxel.lintstone.api.actors.StupidActor;
 
 import java.util.ArrayList;
@@ -24,22 +25,32 @@ public class FailingTests {
     public static final String FAILING = "failing";
     public static final String NOT_EXISTENT = "no";
     final CountDownLatch latch = new CountDownLatch(1);
+    List<Object> errorMessage = new ArrayList<>();
 
     public FailingTests() {
     }
 
+    private ErrorHandlerDecision addError(Object o) {
+        errorMessage.add(o);
+        return ErrorHandlerDecision.CONTINUE;
+    }
+
+    @BeforeEach
+    void init() {
+        errorMessage.clear();
+    }
+
     @Test
-    public void testFailedMessageResponse() throws InterruptedException, ExecutionException {
+    public void testFailedMessageResponse() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create();
-        List<Object> errorMessage = new ArrayList<>();
         system.registerActor(STOP_ACTOR, () -> a -> {
             System.out.println("stop received. countdown latch");
             latch.countDown();
-        }, ActorSettings.create().setErrorHandler(errorMessage::add).build());
+        }, ActorSettings.create().setErrorHandler(this::addError).build());
 
 
         // This creates an actor that will create a FAILING actor
-        LintStoneActorAccessor stupid = system.registerActor(GATEWAY, StupidActor::new, ActorSettings.create().setErrorHandler(errorMessage::add).build());
+        LintStoneActorAccessor stupid = system.registerActor(GATEWAY, StupidActor::new, ActorSettings.create().setErrorHandler(this::addError).build());
 
         // this will create the error handler
         // send a "Hi" to the error handler
@@ -67,10 +78,9 @@ public class FailingTests {
     @Test
     public void testGetDataOut() throws InterruptedException, ExecutionException {
         LintStoneSystem system = LintStoneSystemFactory.create();
-        List<Object> errorMessage = new ArrayList<>();
 
 
-        LintStoneActorAccessor echoActor = system.registerActor(ECHO_ACTOR, () -> a -> a.reply("echo"), ActorSettings.create().setErrorHandler(errorMessage::add).build());
+        LintStoneActorAccessor echoActor = system.registerActor(ECHO_ACTOR, () -> a -> a.reply("echo"), ActorSettings.create().setErrorHandler(this::addError).build());
 
         // this message goes to an actor that wants to reply. but can't, because we are calling from outside the actor system
         // so this should be a message in the errorHandler
@@ -85,5 +95,6 @@ public class FailingTests {
 
         system.shutDownAndWait();
     }
+
 
 }
