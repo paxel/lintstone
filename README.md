@@ -1,6 +1,7 @@
 # lintstone
 There is no Thread Thlintstone. Lintstone is a simple actor framework. nough said.
 
+[![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
 
 ```xml
         <dependency>
