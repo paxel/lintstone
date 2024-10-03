@@ -2,6 +2,7 @@ package paxel.lintstone.impl;
 
 import paxel.lintstone.api.*;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -45,6 +46,15 @@ public class MessageContext implements LintStoneMessageEventContext {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
         }
         actor.get().send(msg, self, null);
+    }
+
+    @Override
+    public void tell(String name, Object msg, Duration delay) throws UnregisteredRecipientException {
+        Optional<Actor> actor = actorSystem.getOptionalActor(name);
+        if (actor.isEmpty()) {
+            throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
+        }
+        actor.get().send(msg, self, null, delay);
     }
 
     @Override

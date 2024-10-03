@@ -1,21 +1,29 @@
 package paxel.lintstone.impl;
 
+import paxel.lintstone.api.*;
+
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import paxel.lintstone.api.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ActorSystem implements LintStoneSystem {
 
-    private final Map<String, Actor> actors = Collections.synchronizedMap(new HashMap<>());
-    private final GroupingExecutor groupingExecutor;
+    private final Map<String, Actor> actors = new ConcurrentHashMap<>();
+    private final ProcessorFactory processorFactory;
+    private final Scheduler scheduler;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public ActorSystem() {
-        groupingExecutor = new GroupingExecutor();
+        processorFactory = new GroupingExecutor();
+        scheduler = new SimpleScheduler();
+    }
+
+    public ActorSystem(ProcessorFactory processorFactory, Scheduler scheduler) {
+        this.processorFactory = processorFactory;
+        this.scheduler = scheduler;
     }
 
     @Override
@@ -30,26 +38,24 @@ public class ActorSystem implements LintStoneSystem {
 
     @Override
     public LintStoneActorAccessor getActor(String name) {
-        synchronized (actors) {
-            return new SelfUpdatingActorAccessor(name, actors.get(name), this, null);
-        }
+        return new SelfUpdatingActorAccessor(name, actors.get(name), this, null);
     }
 
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, ActorSettings settings, Object initMessage) {
-        SequentialProcessorBuilder sequentialProcessorBuilder = groupingExecutor.create();
+        SequentialProcessorBuilder sequentialProcessorBuilder = processorFactory.create();
         sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder);
     }
 
 
     private LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, SequentialProcessorBuilder sequentialProcessor) {
-        synchronized (actors) {
+        try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             Actor existing = actors.get(name);
             if (existing != null) {
                 return new SelfUpdatingActorAccessor(name, existing, this, sender);
             }
             LintStoneActor actorInstance = factory.create();
-            Actor newActor = new Actor(name, actorInstance, sequentialProcessor.build(), this, sender);
+            Actor newActor = new Actor(name, actorInstance, sequentialProcessor.build(), this, sender, scheduler);
             // actor receives the initMessage as first message.
             Optional.ofNullable(initMessage).ifPresent(msg -> newActor.send(msg, null, null));
             actors.put(name, newActor);
@@ -61,32 +67,36 @@ public class ActorSystem implements LintStoneSystem {
     @Override
     public void shutDown() {
         shutdownActors(false);
-        groupingExecutor.shutdown();
+        processorFactory.shutdown();
+        scheduler.shutDown();
     }
 
     @Override
     public void shutDownAndWait() throws InterruptedException {
         shutdownActors(false);
-        groupingExecutor.shutdown();
+        processorFactory.shutdown();
+        scheduler.shutDown();
         //wait forever and a day
-        groupingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
+        processorFactory.awaitTermination(Long.MAX_VALUE, TimeUnit.HOURS);
     }
 
     @Override
     public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
         shutdownActors(false);
-        groupingExecutor.shutdown();
-        return groupingExecutor.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
+        processorFactory.shutdown();
+        scheduler.shutDown();
+        return processorFactory.awaitTermination(timeout.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override
     public void shutDownNow() {
         shutdownActors(true);
-        groupingExecutor.shutdownNow();
+        processorFactory.shutdownNow();
+        scheduler.shutDown();
     }
 
     private void shutdownActors(boolean now) {
-        synchronized (actors) {
+        try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             actors.entrySet().stream().map(Map.Entry::getValue).forEach(a -> a.shutdown(now));
         }
     }
@@ -94,7 +104,7 @@ public class ActorSystem implements LintStoneSystem {
 
     @Override
     public boolean unregisterActor(String name) {
-        synchronized (actors) {
+        try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             Actor remove = actors.remove(name);
             if (remove != null) {
                 // this actor will not accept any messages anymore. The Accesses should try to get a new instance or fail.
@@ -116,7 +126,7 @@ public class ActorSystem implements LintStoneSystem {
         StringBuilder stringBuilder = new StringBuilder("ActorSystem{");
 
         actors.forEach((a, f) -> stringBuilder.append(f.toString()).append("\n"));
-        stringBuilder.append(" exec:").append(groupingExecutor.toString());
+        stringBuilder.append(" exec:").append(processorFactory.toString());
         stringBuilder.append("}");
 
         return stringBuilder.toString();

@@ -1,11 +1,13 @@
 package paxel.lintstone.impl;
 
+import paxel.lintstone.api.ProcessorFactory;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class GroupingExecutor {
+public class GroupingExecutor implements ProcessorFactory {
     private final ExecutorService executorService;
 
 
@@ -14,27 +16,28 @@ public class GroupingExecutor {
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
     }
 
+    @Override
     public SequentialProcessorBuilder create() {
         // the Builder will submit the runnable to the service when the Processor is build.
         return new SequentialProcessorBuilder(executorService);
     }
 
+    @Override
     public void shutdown() {
         executorService.shutdown();
     }
 
+    @Override
     public List<Runnable> shutdownNow() {
         return executorService.shutdownNow();
     }
 
+    @Override
     public boolean isShutdown() {
         return executorService.isShutdown();
     }
 
-    public boolean isTerminated() {
-        return executorService.isTerminated();
-    }
-
+    @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         return executorService.awaitTermination(timeout, unit);
     }

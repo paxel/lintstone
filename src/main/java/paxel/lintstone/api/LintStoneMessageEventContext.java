@@ -1,5 +1,6 @@
 package paxel.lintstone.api;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -60,6 +61,17 @@ public interface LintStoneMessageEventContext {
 
     /**
      * Sends the message to the actor with the registered name.
+     *
+     * @param name  the name of the actor.
+     * @param msg   The message to send.
+     * @param delay The delay of the message send. The message will be enqueued not before this duration has passed.
+     * @throws UnregisteredRecipientException if there is no actor with that
+     *                                        name.
+     */
+    void tell(String name, Object msg, Duration delay) throws UnregisteredRecipientException;
+
+    /**
+     * Sends the message to the actor with the registered name.
      * The replies of that actor are processed by the given Reply Handler in the thread context of this actor.
      *
      * @param name    the name of the actor.
@@ -110,8 +122,8 @@ public interface LintStoneMessageEventContext {
      * This method delegates to
      * {@link LintStoneSystem#registerActor(String, LintStoneActorFactory, ActorSettings)}.
      *
-     * @param name        The name of the actor.
-     * @param factory     The factory.
+     * @param name    The name of the actor.
+     * @param factory The factory.
      * @return The new or old actor access.
      */
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);

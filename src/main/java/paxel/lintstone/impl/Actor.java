@@ -1,10 +1,8 @@
 package paxel.lintstone.impl;
 
-import paxel.lintstone.api.LintStoneActor;
-import paxel.lintstone.api.NoSenderException;
-import paxel.lintstone.api.ReplyHandler;
-import paxel.lintstone.api.UnregisteredRecipientException;
+import paxel.lintstone.api.*;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -25,11 +23,13 @@ class Actor {
     private final AtomicLong totalMessages = new AtomicLong();
     private final AtomicLong totalReplies = new AtomicLong();
     private final MessageContextFactory messageContextFactory;
+    private final Scheduler scheduler;
 
-    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender) {
+    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender, Scheduler scheduler) {
         this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
+        this.scheduler = scheduler;
         messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccessor(name, this, system, sender));
     }
 
@@ -47,6 +47,18 @@ class Actor {
         sequentialProcessor.add(runnable);
         totalMessages.incrementAndGet();
     }
+
+    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Duration delay) throws UnregisteredRecipientException {
+        scheduler.runLater(() -> {
+            if (!registered) {
+
+            }
+            Runnable runnable = createRunnable(message, sender, replyHandler);
+            sequentialProcessor.add(runnable);
+            totalMessages.incrementAndGet();
+        }, delay);
+    }
+
 
     void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         if (!registered) {
