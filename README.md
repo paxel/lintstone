@@ -121,14 +121,12 @@ Benchmark:
 * wait until the result was sent to the final actor
 * shutdown the system
 ```
-Benchmark                  Mode  Cnt        Score        Error  Units
-JmhTest.run_____1_Actors  thrpt    5   317127.717 ±   8029.515  ops/s
-JmhTest.run_____2_Actors  thrpt    5   547704.933 ±   8683.210  ops/s
-JmhTest.run____10_Actors  thrpt    5  1384233.070 ±   4930.434  ops/s
-JmhTest.run____20_Actors  thrpt    5  1727040.878 ± 117252.943  ops/s
-JmhTest.run____30_Actors  thrpt    5  1847566.975 ± 252653.978  ops/s
-JmhTest.run___999_Actors  thrpt    5  2073771.534 ± 140663.794  ops/s
-JmhTest.run_50000_Actors  thrpt    5  1813868.496 ±  90683.616  ops/s
+Benchmark                                  Mode  Cnt        Score         Error  Units
+ActorBenchmark.askSingleActor             thrpt    3    44178.456 ±    7495.502  ops/s
+ActorBenchmark.tellSingleActor            thrpt    3  5228301.005 ± 3778276.932  ops/s
+ActorBenchmark.tellSingleActorContention  thrpt    3  4127057.340 ± 3896544.941  ops/s
+ActorBenchmark.tellTwoActors              thrpt    3  3442363.417 ± 4549389.691  ops/s
+JmhTest.run_50000_Actors                  thrpt    3  3001603.907 ± 6958893.102  ops/s
 ```
 
 A better test would be:

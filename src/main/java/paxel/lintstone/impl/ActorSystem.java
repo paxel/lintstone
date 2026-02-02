@@ -116,9 +116,7 @@ public class ActorSystem implements LintStoneSystem {
     }
 
     Optional<Actor> getOptionalActor(String name) {
-        synchronized (actors) {
-            return Optional.ofNullable(actors.get(name));
-        }
+        return Optional.ofNullable(actors.get(name));
     }
 
     @Override
