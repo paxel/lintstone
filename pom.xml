@@ -77,6 +77,11 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>pw.krejci</groupId>
+                <artifactId>jmh-maven-plugin</artifactId>
+                <version>0.2.2</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.1</version>
@@ -143,39 +148,7 @@
         <url>https://github.com/paxel/lintstone.git</url>
         <tag>HEAD</tag>
     </scm>
-
     <profiles>
-        <profile>
-            <id>benchmark</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.0.0</version>
-                        <executions>
-                            <execution>
-                                <id>run-benchmarks</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <classpathScope>test</classpathScope>
-                                    <executable>${java.home}/bin/java</executable>
-                                    <arguments>
-                                        <argument>-classpath</argument>
-                                        <classpath />
-                                        <argument>org.openjdk.jmh.Main</argument>
-                                        <argument>.*</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>release</id>
             <properties>
