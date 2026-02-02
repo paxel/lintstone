@@ -22,13 +22,15 @@ public class MessageContextFactory {
     }
 
     /**
-     * Constructs an immutable MessageContext.
+     * Reuses the immutable MessageContext.
      *
      * @param message      The message of the context.
      * @param replyHandler The reply handler for the reply method of the context.
      * @return The MessageContext.
      */
     public MessageContext create(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
-        return new MessageContext(message, actorSystem, self, replyHandler);
+        MessageContext context = new MessageContext(actorSystem, self);
+        context.reset(message, replyHandler);
+        return context;
     }
 }

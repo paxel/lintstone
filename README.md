@@ -122,11 +122,11 @@ Benchmark:
 * shutdown the system
 ```
 Benchmark                                  Mode  Cnt        Score         Error  Units
-ActorBenchmark.askSingleActor             thrpt    3    44178.456 ±    7495.502  ops/s
-ActorBenchmark.tellSingleActor            thrpt    3  5228301.005 ± 3778276.932  ops/s
-ActorBenchmark.tellSingleActorContention  thrpt    3  4127057.340 ± 3896544.941  ops/s
-ActorBenchmark.tellTwoActors              thrpt    3  3442363.417 ± 4549389.691  ops/s
-JmhTest.run_50000_Actors                  thrpt    3  3001603.907 ± 6958893.102  ops/s
+ActorBenchmark.askSingleActor             thrpt    3    44921.216 ±    37077.887  ops/s
+ActorBenchmark.tellSingleActor            thrpt    3  1843570.182 ± 10501679.242  ops/s
+ActorBenchmark.tellSingleActorContention  thrpt    3  3022977.051 ±   218224.576  ops/s
+ActorBenchmark.tellTwoActors              thrpt    3  1583756.916 ±   477648.471  ops/s
+JmhTest.run_50000_Actors                  thrpt    3  2140462.739 ±  3631173.557  ops/s
 ```
 
 A better test would be:

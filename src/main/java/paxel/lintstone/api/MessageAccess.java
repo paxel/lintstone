@@ -4,28 +4,22 @@ package paxel.lintstone.api;
  * This class provides access to the message or the reply.
  */
 public class MessageAccess {
-    private static final MessageAccess DONE = new MessageAccess(null, null) {
-        @Override
-        public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
-            return this;
-        }
 
-        @Override
-        public void otherwise(LintStoneEventHandler<Object> catchAll) {
-        }
-    };
+    private Object message;
+    private LintStoneMessageEventContext context;
+    private boolean handled;
 
-    private final Object message;
-    private final LintStoneMessageEventContext context;
+    public MessageAccess() {
+    }
 
-    public MessageAccess(Object message, LintStoneMessageEventContext context) {
+    public void reset(Object message, LintStoneMessageEventContext context) {
         this.message = message;
         this.context = context;
+        this.handled = false;
     }
 
     /**
      * If the given class is assignable from the message class, then the event handler will be called.
-     * The returned Monad will be non-functional. Otherwise, the Monad returns itself.
      *
      * @param clazz                 The class
      * @param lintStoneEventHandler The handler
@@ -33,9 +27,9 @@ public class MessageAccess {
      * @return A Monad.
      */
     public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
-        if (clazz.isAssignableFrom(message.getClass())) {
+        if (!handled && clazz.isAssignableFrom(message.getClass())) {
+            handled = true;
             lintStoneEventHandler.handle(clazz.cast(message), context);
-            return DONE;
         }
         return this;
     }
@@ -46,6 +40,8 @@ public class MessageAccess {
      * @param catchAll The handler for unknown types.
      */
     public void otherwise(LintStoneEventHandler<Object> catchAll) {
-        catchAll.handle(message, context);
+        if (!handled) {
+            catchAll.handle(message, context);
+        }
     }
 }

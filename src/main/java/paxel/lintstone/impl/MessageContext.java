@@ -14,24 +14,29 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     private final ActorSystem actorSystem;
     private final SelfUpdatingActorAccessor self;
-    private final Object message;
-    private final BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
+    private final MessageAccess messageAccess = new MessageAccess();
+    private Object message;
+    private BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
 
-    public MessageContext(Object message, ActorSystem actorSystem, SelfUpdatingActorAccessor self, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
-        this.message = message;
+    public MessageContext(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
         this.self = self;
+    }
+
+    public void reset(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
+        this.message = message;
         this.replyHandler = replyHandler;
+        this.messageAccess.reset(message, this);
     }
 
     @Override
     public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> consumer) {
-        return new MessageAccess(message, this).inCase(clazz, consumer);
+        return messageAccess.inCase(clazz, consumer);
     }
 
     @Override
     public void otherwise(LintStoneEventHandler<Object> catchAll) {
-        new MessageAccess(message, this).otherwise(catchAll);
+        messageAccess.otherwise(catchAll);
     }
 
     @Override

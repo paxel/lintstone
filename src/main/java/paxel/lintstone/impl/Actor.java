@@ -4,6 +4,7 @@ import paxel.lintstone.api.*;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,8 @@ class Actor {
     private final MessageContextFactory messageContextFactory;
     private final Scheduler scheduler;
 
+    private final ConcurrentLinkedQueue<MessageTask> taskPool = new ConcurrentLinkedQueue<>();
+
     Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender, Scheduler scheduler) {
         this.name = name;
         this.actorInstance = actorInstance;
@@ -43,19 +46,16 @@ class Actor {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
 
-        Runnable runnable = createRunnable(message, sender, replyHandler);
-        sequentialProcessor.add(runnable);
+        sequentialProcessor.add(createTask(message, sender, replyHandler));
         totalMessages.incrementAndGet();
     }
 
     void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Duration delay) throws UnregisteredRecipientException {
         scheduler.runLater(() -> {
-            if (!registered) {
-
+            if (registered) {
+                sequentialProcessor.add(createTask(message, sender, replyHandler));
+                totalMessages.incrementAndGet();
             }
-            Runnable runnable = createRunnable(message, sender, replyHandler);
-            sequentialProcessor.add(runnable);
-            totalMessages.incrementAndGet();
         }, delay);
     }
 
@@ -65,17 +65,38 @@ class Actor {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
 
-        Runnable runnable = createRunnable(message, sender, replyHandler);
-        if (!sequentialProcessor.addWithBackPressure(runnable, blockThreshold)) {
+        MessageTask task = createTask(message, sender, replyHandler);
+        if (!sequentialProcessor.addWithBackPressure(task, blockThreshold)) {
+            taskPool.offer(task);
             throw new IllegalStateException("The sequential processor rejected the message.");
         }
         totalMessages.incrementAndGet();
     }
 
-    private Runnable createRunnable(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
-        Runnable runnable = () -> {
+    private MessageTask createTask(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+        MessageTask task = taskPool.poll();
+        if (task == null) {
+            task = new MessageTask();
+        }
+        task.reset(message, sender, replyHandler);
+        return task;
+    }
+
+    private class MessageTask implements Runnable {
+        private Object message;
+        private SelfUpdatingActorAccessor sender;
+        private ReplyHandler replyHandler;
+
+        void reset(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+            this.message = message;
+            this.sender = sender;
+            this.replyHandler = replyHandler;
+        }
+
+        @Override
+        public void run() {
             // create mec and delegate replies to our handleReply method
-            MessageContext mec = messageContextFactory.create(message, (msg, self) -> this.handleReply(msg, self, sender, replyHandler));
+            MessageContext mec = messageContextFactory.create(message, (msg, self) -> Actor.this.handleReply(msg, self, sender, replyHandler));
             // process message
             try {
                 actorInstance.newMessageEvent(mec);
@@ -85,10 +106,10 @@ class Actor {
                 } else {
                     LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
                 }
+            } finally {
+                taskPool.offer(this);
             }
-            // TODO: catch exception. introduce error handler.
-        };
-        return runnable;
+        }
     }
 
     /**
@@ -128,21 +149,43 @@ class Actor {
         sequentialProcessor.shutdown(now);
     }
 
+    private final ConcurrentLinkedQueue<ReplyTask> replyTaskPool = new ConcurrentLinkedQueue<>();
+
     public void run(ReplyHandler replyHandler, Object reply) {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
-        sequentialProcessor.add(() -> {
+
+        ReplyTask task = replyTaskPool.poll();
+        if (task == null) {
+            task = new ReplyTask();
+        }
+        task.reset(replyHandler, reply);
+        sequentialProcessor.add(task);
+        totalReplies.incrementAndGet();
+    }
+
+    private class ReplyTask implements Runnable {
+        private ReplyHandler replyHandler;
+        private Object reply;
+
+        void reset(ReplyHandler replyHandler, Object reply) {
+            this.replyHandler = replyHandler;
+            this.reply = reply;
+        }
+
+        @Override
+        public void run() {
             // we update the message context with the reply and give it to the reply handler
-            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> this.handleReply(msg, self, null, null));
+            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> Actor.this.handleReply(msg, self, null, null));
             try {
                 replyHandler.process(mec);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "While processing runnable on " + name + ":", e);
+            } finally {
+                replyTaskPool.offer(this);
             }
-            // TODO: catch exception. introduce error handler.
-        });
-        totalReplies.incrementAndGet();
+        }
     }
 
     @Override
