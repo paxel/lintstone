@@ -41,7 +41,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
     @Override
     public void add(Runnable runnable) {
-        if (status.get() != ACTIVE) {
+        if (status.get() != ACTIVE || endGracefully.get()) {
             return;
         }
 
@@ -58,14 +58,17 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
     @Override
     public boolean addWithBackPressure(Runnable runnable, int blockThreshold) throws InterruptedException {
+        if (blockThreshold <= 0) {
+            throw new IllegalArgumentException("blockThreshold must be greater than 0");
+        }
         while (queueSize.get() >= blockThreshold) {
-            if (status.get() != ACTIVE) {
+            if (status.get() != ACTIVE || endGracefully.get()) {
                 return false;
             }
             backPressureSemaphore.acquire();
         }
 
-        if (status.get() != ACTIVE) {
+        if (status.get() != ACTIVE || endGracefully.get()) {
             return false;
         }
 
@@ -89,6 +92,8 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     @Override
     public void unregisterGracefully() {
         endGracefully.set(true);
+        // Wake up potentially blocked threads
+        backPressureSemaphore.release(65536);
         try {
             lock.lock();
             // awake the blocked actor
@@ -106,8 +111,11 @@ public class SequentialProcessorImpl implements SequentialProcessor {
             status.set(STOPPED);
             queuedRunnables.clear();
             queueSize.set(0);
-            backPressureSemaphore.release(1000); // Wake up potentially blocked threads
         }
+        // Wake up potentially blocked threads. 
+        // Once endGracefully is true, no new threads will block on this semaphore.
+        // We release a large number to ensure all current and racing waiters are woken up.
+        backPressureSemaphore.release(65536);
         try {
             lock.lock();
             // awake the blocked actor
@@ -181,7 +189,8 @@ public class SequentialProcessorImpl implements SequentialProcessor {
             }
             return true;
         } catch (InterruptedException e) {
-            // End this Thread
+            // Restore interrupted status and end this Thread
+            Thread.currentThread().interrupt();
             return false;
         } finally {
             lock.unlock();
@@ -197,7 +206,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
                 status.set(ABORT);
                 queuedRunnables.clear();
                 queueSize.set(0);
-                backPressureSemaphore.release(1000);
+                backPressureSemaphore.release(65536);
             }
         }
     }

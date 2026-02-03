@@ -55,7 +55,7 @@ File: `SimpleScheduler.java`
  - Impact: Larger-than-expected delays and jitter; unnecessary system calls.
  - Suggested fix: Cache `now` once per loop iteration; use smaller minimum wait or adaptive strategy.~~
 
-### 5) Potential producer starvation on shutdown/backpressure
+~~### 5) Potential producer starvation on shutdown/backpressure
 Files: `SequentialProcessorImpl.java`
 
 - `addWithBackPressure(...)` blocks when `queueSize >= threshold` by `backPressureSemaphore.acquire()`. On `shutdown(false)` (graceful) there is no mass release of waiting producers; the release only occurs when consumers poll items. If a processor stops progressing for other reasons, producers can remain blocked for prolonged periods.
@@ -63,7 +63,7 @@ Files: `SequentialProcessorImpl.java`
 - Impact: Potentially blocked producer threads during shutdown/abort sequences.
 - Suggested fix:
   - On graceful shutdown initiate a bounded drain with periodic releases, or switch to a bounded queue (e.g., `LinkedBlockingQueue`) where `put`/`offer` semantics are clearer.
-  - Replace magic number `1000` with a calculation based on the number of waiting producers or use `drainPermits`/`reducePermits` appropriately.
+  - Replace magic number `1000` with a calculation based on the number of waiting producers or use `drainPermits`/`reducePermits` appropriately.~~
 
 ### 6) Unbounded message queue for `tell(...)` can cause memory exhaustion
 Files: `SequentialProcessorImpl.java`, `Actor.java`
@@ -81,19 +81,19 @@ File: `SelfUpdatingActorAccessor.java`
   - Make `actor` `volatile` or guard with `VarHandle`/`AtomicReference`.
   - Document thread-safety contract of accessors and enforce single-threaded use in API, or create per-thread accessors.
 
-### 8) Interrupted status is swallowed
+~~### 8) Interrupted status is swallowed
 Files: `SequentialProcessorImpl.java`
 
 - In `checkWaiting()`, when `await` throws `InterruptedException`, the method returns `false` but does not restore the interrupted flag.
 - Impact: Loss of interruption information; may hinder upper-layer shutdown logic relying on `Thread.interrupted()`.
-- Suggested fix: Call `Thread.currentThread().interrupt()` before returning.
+- Suggested fix: Call `Thread.currentThread().interrupt()` before returning.~~
 
 ### 9) Minor cleanups and code hygiene
 
 - ~~`SimpleScheduler.wrapRunnable` is unused; can be removed.~~
 - ~~Several fields in `SimpleScheduler` (`lock`, `newJob`) can be `private`.~~
 - Consider using `Condition#signal` instead of `signalAll` where appropriate.
-- Add parameter validation for `addWithBackPressure(..., blockThreshold)` to prevent accidental zero/negative thresholds.
+- ~~Add parameter validation for `addWithBackPressure(..., blockThreshold)` to prevent accidental zero/negative thresholds.~~
 
 ### 10) Security considerations
 
