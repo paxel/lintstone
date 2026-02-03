@@ -15,8 +15,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     private final SelfUpdatingActorAccessor sender;
     private final String name;
     private final ActorSystem system;
-    // not volatile as we expect to be used single-threaded
-    private Actor actor;
+    private volatile Actor actor;
 
     SelfUpdatingActorAccessor(String name, Actor actor, ActorSystem system, SelfUpdatingActorAccessor sender) {
         this.name = name;

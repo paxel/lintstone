@@ -7,7 +7,7 @@ This document summarizes findings from a focused review of the core actor system
 - ~~Critical: SimpleScheduler may hang on shutdown when idle (no jobs queued).~~
 - ~~Critical: SimpleScheduler can drop jobs scheduled for the exact same instant due to `compareTo` equality.~~
 - ~~DoS risk: Unbounded message queues for `tell(...)` (no backpressure) can exhaust memory.~~
-- Concurrency risk: `SelfUpdatingActorAccessor.actor` is not `volatile` and may be used across threads.
+- ~~Concurrency risk: `SelfUpdatingActorAccessor.actor` is not `volatile` and may be used across threads.~~
 - ~~Backpressure edge cases on shutdown/abort may leave producers blocked.~~
 - ~~Timing/accuracy: Scheduler has coarse minimum wake-up (≥100 ms) and uses multiple `Instant.now()` calls.~~
 - ~~Minor: Scheduling still accepted after shutdown; jobs will never run.~~
@@ -35,14 +35,8 @@ FIXED
 ~~### 6) Unbounded message queue for `tell(...)` can cause memory exhaustion~~
 FIXED
 
-### 7) Concurrency visibility risk in SelfUpdatingActorAccessor
-File: `SelfUpdatingActorAccessor.java`
-
-- Field `actor` is explicitly “not volatile as we expect to be used single-threaded”. In practice, accessors may be shared across threads (e.g., injected into multiple components). Without `volatile`, there can be stale reads/writes during actor rotation/unregister, leading to spurious `UnregisteredRecipientException` or missed updates.
-- Impact: Rare, data-race dependent failures in highly concurrent scenarios.
-- Suggested remedies:
-  - Make `actor` `volatile` or guard with `VarHandle`/`AtomicReference`.
-  - Document thread-safety contract of accessors and enforce single-threaded use in API, or create per-thread accessors.
+~~### 7) Concurrency visibility risk in SelfUpdatingActorAccessor~~
+FIXED
 
 ~~### 8) Interrupted status is swallowed~~
 FIXED
@@ -72,7 +66,7 @@ FIXED
    - ~~Replace magic permit release; consider a bounded queue and clearer shutdown signaling to producers.~~
    - ~~Restore interrupt flag on `InterruptedException`.~~
 3. ~~Provide configurable queue limits and default backpressure behavior for `tell(...)` via `ActorSettings`.~~
-4. Make `SelfUpdatingActorAccessor.actor` `volatile` or document/enforce single-threaded use.
+4. ~~Make `SelfUpdatingActorAccessor.actor` `volatile` or document/enforce single-threaded use.~~
 5. ~~Add tests:~~
    - ~~Scheduler: identical-instant tasks; shutdown while idle; post-shutdown `runLater` behavior.~~
    - ~~Backpressure: producers blocked across shutdown sequences.~~
