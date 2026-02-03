@@ -27,4 +27,16 @@ class SimpleSchedulerTest {
         assertThat(order).containsExactly("one", "3", "4", "five");
     }
 
+    @Test
+    void testShutdownIdle() throws InterruptedException {
+        SimpleScheduler scheduler = new SimpleScheduler();
+        Thread thread = new Thread(scheduler);
+        thread.start();
+        Thread.sleep(200);
+        long startTime = System.currentTimeMillis();
+        scheduler.shutDown();
+        thread.join(1000);
+        assertThat(thread.isAlive()).isFalse();
+        assertThat(System.currentTimeMillis() - startTime).isLessThan(500L);
+    }
 }

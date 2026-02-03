@@ -51,7 +51,13 @@ public class SimpleScheduler implements Scheduler, Runnable {
 
     @Override
     public void shutDown() {
-        this.stop.set(true);
+        lock.lock();
+        try {
+            this.stop.set(true);
+            newJob.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
