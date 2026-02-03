@@ -9,7 +9,7 @@ import paxel.lintstone.api.ErrorHandlerDecision;
  * Builder for {@link ActorSettings}.
  */
 public class ActorSettingsBuilder {
-    private @NonNull ErrorHandler errorHandler = x -> ErrorHandlerDecision.CONTINUE;
+    private @NonNull ErrorHandler errorHandler = (err, desc, cause) -> ErrorHandlerDecision.CONTINUE;
     private int queueLimit;
 
     /**

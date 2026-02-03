@@ -29,8 +29,8 @@ public class FailingTests {
     public FailingTests() {
     }
 
-    private ErrorHandlerDecision addError(Object o) {
-        errorMessage.add(o);
+    private ErrorHandlerDecision addError(LintStoneError error, String description, Throwable cause) {
+        errorMessage.add(cause);
         return ErrorHandlerDecision.CONTINUE;
     }
 

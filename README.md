@@ -99,6 +99,28 @@ To prevent flooding the system when producing messages faster than they can be p
 actor.tellWithBackPressure(bigData, 1000);
 ```
 
+### Error Handling
+LintStone provides a structured error handling mechanism. By default, the system remains silent to prevent leaking sensitive data in logs. You can provide a custom `ErrorHandler` to decide how to handle exceptions.
+
+```java
+ActorSettings settings = ActorSettings.create()
+    .setErrorHandler((error, description, cause) -> {
+        System.err.println("Error: " + error + " - " + description);
+        cause.printStackTrace();
+        return ErrorHandlerDecision.CONTINUE; // or ABORT to stop the actor
+    })
+    .build();
+
+system.registerActor("myActor", MyActor::new, settings);
+```
+
+The `ErrorHandler` receives:
+*   `LintStoneError`: The category of the error (e.g., `MESSAGE_PROCESSING_FAILED`).
+*   `description`: A human-readable context of where the error occurred.
+*   `cause`: The actual exception that was caught.
+
+You can return `ErrorHandlerDecision.CONTINUE` to keep the actor running or `ErrorHandlerDecision.ABORT` to shut it down immediately.
+
 ### Map-Reduce Demo
 LintStone is ideal for data-intensive tasks like Map-Reduce. See the full example in `src/test/java/paxel/lintstone/api/example/mapreduce/MapReduceDemo.java`.
 

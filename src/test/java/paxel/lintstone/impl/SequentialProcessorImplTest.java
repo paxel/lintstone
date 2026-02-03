@@ -17,7 +17,7 @@ public class SequentialProcessorImplTest {
 
     @Test
     public void testSequentialExecution() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         List<Integer> results = Collections.synchronizedList(new ArrayList<>());
         int count = 1000;
         CountDownLatch latch = new CountDownLatch(count);
@@ -45,7 +45,7 @@ public class SequentialProcessorImplTest {
 
     @Test
     public void testNoConcurrentExecution() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         AtomicInteger activeThreads = new AtomicInteger(0);
         AtomicInteger maxActiveThreads = new AtomicInteger(0);
         int count = 100;
@@ -81,7 +81,7 @@ public class SequentialProcessorImplTest {
 
     @Test
     public void testBackPressure() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         int threshold = 10;
         CountDownLatch startedLatch = new CountDownLatch(1);
         CountDownLatch blockLatch = new CountDownLatch(1);
@@ -132,7 +132,7 @@ public class SequentialProcessorImplTest {
 
     @Test
     public void testShutdownNow() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         CountDownLatch started = new CountDownLatch(1);
         CountDownLatch block = new CountDownLatch(1);
 

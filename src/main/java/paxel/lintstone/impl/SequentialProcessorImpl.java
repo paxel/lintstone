@@ -3,6 +3,7 @@ package paxel.lintstone.impl;
 import lombok.NonNull;
 import paxel.lintstone.api.ErrorHandler;
 import paxel.lintstone.api.ErrorHandlerDecision;
+import paxel.lintstone.api.LintStoneError;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
@@ -201,8 +202,16 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     private void runNextMessage(@NonNull Runnable runnable) {
         try {
             runnable.run();
+        } catch (ProcessingException e) {
+            if (errorHandler.handleError(e.getError(), e.getDescription(), e.getCause()) != ErrorHandlerDecision.CONTINUE) {
+                // errorhandler says: give up
+                status.set(ABORT);
+                queuedRunnables.clear();
+                queueSize.set(0);
+                backPressureSemaphore.release(65536);
+            }
         } catch (Exception e) {
-            if (errorHandler.handleError(e) != ErrorHandlerDecision.CONTINUE) {
+            if (errorHandler.handleError(LintStoneError.UNEXPECTED_ERROR, "Unexpected error in sequential processor", e) != ErrorHandlerDecision.CONTINUE) {
                 // errorhandler says: give up
                 status.set(ABORT);
                 queuedRunnables.clear();

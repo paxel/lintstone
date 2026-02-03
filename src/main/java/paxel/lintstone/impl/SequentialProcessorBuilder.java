@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class SequentialProcessorBuilder {
     private final ExecutorService executorService;
-    private ErrorHandler errorHandler = err -> ErrorHandlerDecision.CONTINUE;
+    private ErrorHandler errorHandler = (err, desc, cause) -> ErrorHandlerDecision.CONTINUE;
 
     /**
      * Creates a new builder with the given executor service.

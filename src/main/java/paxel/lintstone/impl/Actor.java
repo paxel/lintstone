@@ -7,16 +7,12 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This wraps the actual implementation of an Actor and makes sure that inside the actor system everything
  * is well synchronized.
  */
 class Actor {
-
-    private static final Logger LOG = Logger.getLogger(Actor.class.getName());
 
     private final @NonNull String name;
 
@@ -119,10 +115,8 @@ class Actor {
             } catch (Exception e) {
                 if (sender != null) {
                     sender.tell(new FailedMessage(message, e, name));
-                } else {
-                    LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
                 }
-                throw e;
+                throw new ProcessingException(LintStoneError.MESSAGE_PROCESSING_FAILED, "While processing " + message + " on " + name, e);
             } finally {
                 taskPool.offer(this);
             }
@@ -198,8 +192,7 @@ class Actor {
             try {
                 replyHandler.process(mec);
             } catch (Exception e) {
-                LOG.log(Level.SEVERE, "While processing runnable on " + name + ":", e);
-                throw e;
+                throw new ProcessingException(LintStoneError.REPLY_PROCESSING_FAILED, "While processing runnable on " + name, e);
             } finally {
                 replyTaskPool.offer(this);
             }

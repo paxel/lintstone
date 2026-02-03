@@ -13,7 +13,7 @@ public class SequentialProcessorShutdownTest {
 
     @Test
     void testNoProducerStarvationOnGracefulShutdown() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         
         // Fill the processor to the threshold
         int threshold = 10;
@@ -56,7 +56,7 @@ public class SequentialProcessorShutdownTest {
 
     @Test
     void testNoProducerStarvationOnImmediateShutdown() throws InterruptedException {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         
         int threshold = 10;
         for (int i = 0; i < threshold; i++) {
@@ -92,7 +92,7 @@ public class SequentialProcessorShutdownTest {
 
     @Test
     void testValidationOfBlockThreshold() {
-        SequentialProcessorImpl processor = new SequentialProcessorImpl(e -> ErrorHandlerDecision.CONTINUE);
+        SequentialProcessorImpl processor = new SequentialProcessorImpl((err, desc, cause) -> ErrorHandlerDecision.CONTINUE);
         
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> processor.addWithBackPressure(() -> {}, 0))
                 .isInstanceOf(IllegalArgumentException.class)

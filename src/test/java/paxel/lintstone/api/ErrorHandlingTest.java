@@ -17,7 +17,7 @@ public class ErrorHandlingTest {
         AtomicReference<Object> lastMsg = new AtomicReference<>();
 
         ActorSettings settings = ActorSettings.create()
-                .setErrorHandler(err -> ErrorHandlerDecision.ABORT)
+                .setErrorHandler((err, desc, cause) -> ErrorHandlerDecision.ABORT)
                 .build();
 
         LintStoneActorAccessor actor = system.registerActor("actor", () -> mec -> {
@@ -45,7 +45,7 @@ public class ErrorHandlingTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         ActorSettings settings = ActorSettings.create()
-                .setErrorHandler(err -> ErrorHandlerDecision.CONTINUE)
+                .setErrorHandler((err, desc, cause) -> ErrorHandlerDecision.CONTINUE)
                 .build();
 
         LintStoneActorAccessor actor = system.registerActor("actor", () -> mec -> {
