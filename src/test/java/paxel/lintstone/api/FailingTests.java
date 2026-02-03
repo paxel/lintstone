@@ -1,8 +1,8 @@
 package paxel.lintstone.api;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import paxel.lintstone.api.actors.StupidActor;
 
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ public class FailingTests {
         return ErrorHandlerDecision.CONTINUE;
     }
 
-    @BeforeEach
-    void init() {
+    @Before
+    public void init() {
         errorMessage.clear();
     }
 
@@ -90,8 +90,8 @@ public class FailingTests {
         assertThat(echo, is("echo"));
 
         // the first try should have created a message here,
-        // but currently it's just a log message
-        assertThat(errorMessage.size(), is(0));
+        // and now it does because we fixed the error propagation
+        assertThat(errorMessage.size(), is(1));
 
         system.shutDownAndWait();
     }
