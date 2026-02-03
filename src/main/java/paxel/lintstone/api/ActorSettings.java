@@ -23,6 +23,16 @@ public interface ActorSettings {
     ErrorHandler errorHandler();
 
     /**
+     * The maximum number of messages that can be queued for this actor.
+     * 0 means unlimited.
+     *
+     * @return the queue limit.
+     */
+    default int queueLimit() {
+        return 0;
+    }
+
+    /**
      * Create a builder to build an implementation of the Settings.
      *
      * @return a builder.

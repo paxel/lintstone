@@ -9,6 +9,7 @@ import paxel.lintstone.api.ErrorHandlerDecision;
  */
 public class ActorSettingsBuilder {
     private ErrorHandler errorHandler = x -> ErrorHandlerDecision.CONTINUE;
+    private int queueLimit;
 
     /**
      * Creates a new actor settings builder.
@@ -27,6 +28,17 @@ public class ActorSettingsBuilder {
         return this;
     }
 
+    /**
+     * Sets the maximum number of messages that can be queued for this actor.
+     *
+     * @param queueLimit the queue limit.
+     * @return this builder.
+     */
+    public ActorSettingsBuilder setQueueLimit(int queueLimit) {
+        this.queueLimit = queueLimit;
+        return this;
+    }
+
 
     /**
      * Builds the {@link ActorSettings} instance.
@@ -34,7 +46,7 @@ public class ActorSettingsBuilder {
      * @return the actor settings.
      */
     public ActorSettings build() {
-        return new ActorSettingsImpl( errorHandler);
+        return new ActorSettingsImpl(errorHandler, queueLimit);
     }
 
     /**

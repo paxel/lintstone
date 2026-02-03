@@ -58,18 +58,18 @@ public class ActorSystem implements LintStoneSystem {
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, ActorSettings settings, Object initMessage) {
         SequentialProcessorBuilder sequentialProcessorBuilder = processorFactory.create();
         sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
-        return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder);
+        return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder, settings.queueLimit());
     }
 
 
-    private LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, SequentialProcessorBuilder sequentialProcessor) {
+    private LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, SequentialProcessorBuilder sequentialProcessor, int queueLimit) {
         try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             Actor existing = actors.get(name);
             if (existing != null) {
                 return new SelfUpdatingActorAccessor(name, existing, this, sender);
             }
             LintStoneActor actorInstance = factory.create();
-            Actor newActor = new Actor(name, actorInstance, sequentialProcessor.build(), this, sender, scheduler);
+            Actor newActor = new Actor(name, actorInstance, sequentialProcessor.build(), this, sender, scheduler, queueLimit);
             // actor receives the initMessage as first message.
             Optional.ofNullable(initMessage).ifPresent(msg -> newActor.send(msg, null, null));
             actors.put(name, newActor);

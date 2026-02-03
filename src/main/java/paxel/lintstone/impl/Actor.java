@@ -25,14 +25,16 @@ class Actor {
     private final AtomicLong totalReplies = new AtomicLong();
     private final MessageContextFactory messageContextFactory;
     private final Scheduler scheduler;
+    private final int queueLimit;
 
     private final ConcurrentLinkedQueue<MessageTask> taskPool = new ConcurrentLinkedQueue<>();
 
-    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender, Scheduler scheduler) {
+    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender, Scheduler scheduler, int queueLimit) {
         this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
         this.scheduler = scheduler;
+        this.queueLimit = queueLimit;
         messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccessor(name, this, system, sender));
     }
 
@@ -44,6 +46,18 @@ class Actor {
     void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
+        }
+
+        if (queueLimit > 0) {
+            try {
+                send(message, sender, replyHandler, queueLimit);
+                return;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // If we are interrupted, we fallback to non-blocking add to avoid losing message if possible,
+                // or just accept that we are interrupted. 
+                // Given the API doesn't allow InterruptedException, this is a compromise.
+            }
         }
 
         sequentialProcessor.add(createTask(message, sender, replyHandler));

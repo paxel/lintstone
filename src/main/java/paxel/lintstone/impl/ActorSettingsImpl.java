@@ -8,6 +8,6 @@ import paxel.lintstone.api.ActorSettings;
  *
  * @param errorHandler the error handler.
  */
-public record ActorSettingsImpl(ErrorHandler errorHandler) implements ActorSettings {
+public record ActorSettingsImpl(ErrorHandler errorHandler, int queueLimit) implements ActorSettings {
 
 }
