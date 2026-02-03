@@ -11,7 +11,7 @@ This document summarizes findings from a focused review of the core actor system
 - ~~Backpressure edge cases on shutdown/abort may leave producers blocked.~~
 - ~~Timing/accuracy: Scheduler has coarse minimum wake-up (≥100 ms) and uses multiple `Instant.now()` calls.~~
 - ~~Minor: Scheduling still accepted after shutdown; jobs will never run.~~
-- Minor: Dead code and visibility modifiers can be tightened.
+- ~~Minor: Dead code and visibility modifiers can be tightened.~~
 
 ---
 
@@ -41,12 +41,8 @@ FIXED
 ~~### 8) Interrupted status is swallowed~~
 FIXED
 
-### 9) Minor cleanups and code hygiene
-
-- ~~`SimpleScheduler.wrapRunnable` is unused; can be removed.~~
-- ~~Several fields in `SimpleScheduler` (`lock`, `newJob`) can be `private`.~~
-- Consider using `Condition#signal` instead of `signalAll` where appropriate.
-- ~~Add parameter validation for `addWithBackPressure(..., blockThreshold)` to prevent accidental zero/negative thresholds.~~
+~~### 9) Minor cleanups and code hygiene~~
+FIXED
 
 ### 10) Security considerations
 

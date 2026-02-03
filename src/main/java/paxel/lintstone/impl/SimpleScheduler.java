@@ -39,7 +39,7 @@ public class SimpleScheduler implements Scheduler, Runnable {
             }
             ScheduledRunnable scheduledRunnable = new ScheduledRunnable(Instant.now().plus(duration), sequencer.getAndIncrement(), runnable);
             jobs.add(scheduledRunnable);
-            newJob.signalAll();
+            newJob.signal();
         } finally {
             lock.unlock();
         }
@@ -51,7 +51,7 @@ public class SimpleScheduler implements Scheduler, Runnable {
         lock.lock();
         try {
             this.stop.set(true);
-            newJob.signalAll();
+            newJob.signal();
         } finally {
             lock.unlock();
         }

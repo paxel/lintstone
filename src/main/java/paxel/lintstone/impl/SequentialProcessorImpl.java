@@ -50,7 +50,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         try {
             lock.lock();
             // wake up the run() method, in case it was waiting for a job
-            empty.signalAll();
+            empty.signal();
         } finally {
             lock.unlock();
         }
@@ -77,7 +77,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         try {
             lock.lock();
             // wake up the run() method, in case it was waiting for a job
-            empty.signalAll();
+            empty.signal();
         } finally {
             lock.unlock();
         }
@@ -97,7 +97,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         try {
             lock.lock();
             // awake the blocked actor
-            empty.signalAll();
+            empty.signal();
         } finally {
             lock.unlock();
         }
@@ -119,7 +119,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         try {
             lock.lock();
             // awake the blocked actor
-            empty.signalAll();
+            empty.signal();
         } finally {
             lock.unlock();
         }
