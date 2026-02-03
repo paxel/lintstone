@@ -26,7 +26,7 @@ File: `src/main/java/paxel/lintstone/impl/SimpleScheduler.java`
   - In `shutDown()`, acquire the lock and `newJob.signalAll()` after flipping `stop` to wake the waiting thread.
   - Alternatively, use `awaitNanos` with a short timeout when `jobs.isEmpty()` so the loop periodically checks `stop`.~~
 
-### 2) SimpleScheduler may drop tasks scheduled for the exact same time
+~~### 2) SimpleScheduler may drop tasks scheduled for the exact same time
 File: `SimpleScheduler.java`
 
 - The `ConcurrentSkipListSet` uses `ScheduledRunnable.compareTo` based only on `start`:
@@ -38,7 +38,7 @@ File: `SimpleScheduler.java`
   Two tasks with identical `start` compare as 0 and are considered equal in the set, so one is discarded.
 - Impact: Lost scheduled executions (hard-to-reproduce time-based bug under burst scheduling).
 - Suggested fix:
-  - Include a strictly increasing sequence number or tie-breaker (e.g., `System.identityHashCode(runnable)` or an `AtomicLong`) in `compareTo` to ensure strict ordering without equality collisions.
+  - Include a strictly increasing sequence number or tie-breaker (e.g., `System.identityHashCode(runnable)` or an `AtomicLong`) in `compareTo` to ensure strict ordering without equality collisions.~~
 
 ### 3) Scheduling allowed after shutdown
 File: `SimpleScheduler.java`

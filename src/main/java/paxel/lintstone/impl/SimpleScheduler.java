@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SimpleScheduler implements Scheduler, Runnable {
 
     private final ConcurrentSkipListSet<ScheduledRunnable> jobs = new ConcurrentSkipListSet<>();
+    private final AtomicLong sequencer = new AtomicLong(0);
 
     private final AtomicBoolean stop = new AtomicBoolean(false);
     ReentrantLock lock = new ReentrantLock();
@@ -32,7 +34,7 @@ public class SimpleScheduler implements Scheduler, Runnable {
     public void runLater(Runnable runnable, Duration duration) {
         lock.lock();
         try {
-            ScheduledRunnable scheduledRunnable = new ScheduledRunnable(Instant.now().plus(duration), runnable);
+            ScheduledRunnable scheduledRunnable = new ScheduledRunnable(Instant.now().plus(duration), sequencer.getAndIncrement(), runnable);
             jobs.add(scheduledRunnable);
             newJob.signalAll();
         } finally {
@@ -88,10 +90,14 @@ public class SimpleScheduler implements Scheduler, Runnable {
         }
     }
 
-    private record ScheduledRunnable(Instant start, Runnable runnable) implements Comparable<ScheduledRunnable> {
+    private record ScheduledRunnable(Instant start, long sequenceNumber, Runnable runnable) implements Comparable<ScheduledRunnable> {
         @Override
         public int compareTo(ScheduledRunnable o) {
-            return this.start.compareTo(o.start);
+            int res = this.start.compareTo(o.start);
+            if (res == 0) {
+                return Long.compare(this.sequenceNumber, o.sequenceNumber);
+            }
+            return res;
         }
     }
 }
