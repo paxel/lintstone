@@ -1,12 +1,14 @@
 package paxel.lintstone.api;
 
+import lombok.NonNull;
+
 /**
  * This class provides access to the message or the reply.
  */
 public class MessageAccess {
 
-    private Object message;
-    private LintStoneMessageEventContext context;
+    private @NonNull Object message;
+    private @NonNull LintStoneMessageEventContext context;
     private boolean handled;
 
     /**
@@ -21,7 +23,7 @@ public class MessageAccess {
      * @param message the message to handle.
      * @param context the context to use.
      */
-    public void reset(Object message, LintStoneMessageEventContext context) {
+    public void reset(@NonNull Object message, @NonNull LintStoneMessageEventContext context) {
         this.message = message;
         this.context = context;
         this.handled = false;
@@ -35,7 +37,7 @@ public class MessageAccess {
      * @param <T>                   The type.
      * @return A Monad.
      */
-    public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> lintStoneEventHandler) {
+    public <T> @NonNull MessageAccess inCase(@NonNull Class<T> clazz, @NonNull LintStoneEventHandler<T> lintStoneEventHandler) {
         if (!handled && clazz.isAssignableFrom(message.getClass())) {
             handled = true;
             lintStoneEventHandler.handle(clazz.cast(message), context);
@@ -48,7 +50,7 @@ public class MessageAccess {
      *
      * @param catchAll The handler for unknown types.
      */
-    public void otherwise(LintStoneEventHandler<Object> catchAll) {
+    public void otherwise(@NonNull LintStoneEventHandler<Object> catchAll) {
         if (!handled) {
             catchAll.handle(message, context);
         }

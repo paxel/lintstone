@@ -1,5 +1,6 @@
 package paxel.lintstone.api;
 
+import lombok.NonNull;
 import paxel.lintstone.impl.ActorSettingsBuilder;
 
 import java.time.Duration;
@@ -19,7 +20,7 @@ public interface LintStoneSystem {
      * @param initMessage The init message. Can be null, but you should use {@link #registerActor(String, LintStoneActorFactory, ActorSettings)} then instead
      * @return The {@link LintStoneActorAccessor} object
      */
-    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings, Object initMessage);
+    LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings, Object initMessage);
 
     /**
      * This generates and registers an Actor according to the given {@link ActorSettings}.
@@ -29,7 +30,7 @@ public interface LintStoneSystem {
      * @param settings The actor settings. Use {@link ActorSettings#create()} to create a builder and {@link ActorSettingsBuilder#build()} to build the instance.
      * @return The {@link LintStoneActorAccessor} object
      */
-    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);
+    LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings);
 
     /**
      * This retrieves an{@link LintStoneActorAccessor} for the given name.
@@ -37,7 +38,7 @@ public interface LintStoneSystem {
      * @param name The name of the actor. The name must be unique in the system.
      * @return The {@link LintStoneActorAccessor} object
      */
-    LintStoneActorAccessor getActor(String name);
+    LintStoneActorAccessor getActor(@NonNull String name);
 
     /**
      * This will stop the executor in the system after all messages are
@@ -66,7 +67,7 @@ public interface LintStoneSystem {
      * @return {@code true} if all actors have stopped before timeout, {@code false} otherwise.
      * @throws java.lang.InterruptedException in case the Thread is interrupted while shutting down.
      */
-    boolean shutDownAndWait(Duration timeout) throws InterruptedException;
+    boolean shutDownAndWait(@NonNull Duration timeout) throws InterruptedException;
 
     /**
      * This will tell all executors to stop immediately.
@@ -84,5 +85,5 @@ public interface LintStoneSystem {
      * @param name The actor to be removed.
      * @return {@code true} if the actor existed and was removed.
      */
-    boolean unregisterActor(String name);
+    boolean unregisterActor(@NonNull String name);
 }

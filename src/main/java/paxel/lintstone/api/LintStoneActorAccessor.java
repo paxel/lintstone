@@ -1,5 +1,7 @@
 package paxel.lintstone.api;
 
+import lombok.NonNull;
+
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -14,7 +16,7 @@ public interface LintStoneActorAccessor {
      * @param message The message to send-
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void tell(Object message) throws UnregisteredRecipientException;
+    void tell(@NonNull Object message) throws UnregisteredRecipientException;
 
     /**
      * Sends a message to the Actor represented by this Access. But blocks the call until the number of messages queued
@@ -25,7 +27,7 @@ public interface LintStoneActorAccessor {
      * @throws UnregisteredRecipientException in case the actor does not exist.
      * @throws InterruptedException           if the thread is interrupted while waiting for backpressure.
      */
-    void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException;
+    void tellWithBackPressure(@NonNull Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException;
 
     /**
      * Retrieve if the actor is currently registered. using this does not ensure
@@ -49,7 +51,7 @@ public interface LintStoneActorAccessor {
      * @param replyHandler The handler for the reply.
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException;
+    void ask(@NonNull Object message, @NonNull ReplyHandler replyHandler) throws UnregisteredRecipientException;
 
     /**
      * A convenient {@link #ask(Object, ReplyHandler)} that returns and completes a {@link CompletableFuture} once, if the replied type is correct.
@@ -60,7 +62,7 @@ public interface LintStoneActorAccessor {
      * @return The future result. It will be completed in the context of the asked actor.
      * @throws UnregisteredRecipientException in case the actor does not exist.
      */
-    <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException;
+    <F> @NonNull CompletableFuture<F> ask(@NonNull Object message) throws UnregisteredRecipientException;
 
     /**
      * Retrieve the total amount of queued messages and replies of this actor.

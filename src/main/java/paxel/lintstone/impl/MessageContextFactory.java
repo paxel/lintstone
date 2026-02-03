@@ -1,5 +1,7 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
+
 import java.util.function.BiConsumer;
 
 /**
@@ -7,8 +9,8 @@ import java.util.function.BiConsumer;
  * This is needed to use the ask context inside the reply handler.
  */
 public class MessageContextFactory {
-    private final ActorSystem actorSystem;
-    private final SelfUpdatingActorAccessor self;
+    private final @NonNull ActorSystem actorSystem;
+    private final @NonNull SelfUpdatingActorAccessor self;
 
     /**
      * The factory is created with the actorSystem and the current actor access.
@@ -16,7 +18,7 @@ public class MessageContextFactory {
      * @param actorSystem The system.
      * @param self        the current actor access.
      */
-    public MessageContextFactory(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
+    public MessageContextFactory(@NonNull ActorSystem actorSystem, @NonNull SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
         this.self = self;
     }
@@ -28,7 +30,7 @@ public class MessageContextFactory {
      * @param replyHandler The reply handler for the reply method of the context.
      * @return The MessageContext.
      */
-    public MessageContext create(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
+    public @NonNull MessageContext create(@NonNull Object message, @NonNull BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         MessageContext context = new MessageContext(actorSystem, self);
         context.reset(message, replyHandler);
         return context;

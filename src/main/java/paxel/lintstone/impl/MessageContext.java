@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.*;
 
 import java.time.Duration;
@@ -12,11 +13,11 @@ import java.util.function.BiConsumer;
  */
 public class MessageContext implements LintStoneMessageEventContext {
 
-    private final ActorSystem actorSystem;
-    private final SelfUpdatingActorAccessor self;
-    private final MessageAccess messageAccess = new MessageAccess();
-    private Object message;
-    private BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
+    private final @NonNull ActorSystem actorSystem;
+    private final @NonNull SelfUpdatingActorAccessor self;
+    private final @NonNull MessageAccess messageAccess = new MessageAccess();
+    private @NonNull Object message;
+    private @NonNull BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
 
     /**
      * Creates a new message context.
@@ -24,7 +25,7 @@ public class MessageContext implements LintStoneMessageEventContext {
      * @param actorSystem the actor system.
      * @param self        the actor accessor for this context.
      */
-    public MessageContext(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
+    public MessageContext(@NonNull ActorSystem actorSystem, @NonNull SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
         this.self = self;
     }
@@ -35,29 +36,29 @@ public class MessageContext implements LintStoneMessageEventContext {
      * @param message      the message.
      * @param replyHandler the reply handler.
      */
-    public void reset(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
+    public void reset(@NonNull Object message, @NonNull BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         this.message = message;
         this.replyHandler = replyHandler;
         this.messageAccess.reset(message, this);
     }
 
     @Override
-    public <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> consumer) {
+    public <T> @NonNull MessageAccess inCase(@NonNull Class<T> clazz, @NonNull LintStoneEventHandler<T> consumer) {
         return messageAccess.inCase(clazz, consumer);
     }
 
     @Override
-    public void otherwise(LintStoneEventHandler<Object> catchAll) {
+    public void otherwise(@NonNull LintStoneEventHandler<Object> catchAll) {
         messageAccess.otherwise(catchAll);
     }
 
     @Override
-    public void reply(Object msg) throws NoSenderException, UnregisteredRecipientException {
+    public void reply(@NonNull Object msg) throws NoSenderException, UnregisteredRecipientException {
         replyHandler.accept(msg, self);
     }
 
     @Override
-    public void tell(String name, Object msg) throws UnregisteredRecipientException {
+    public void tell(@NonNull String name, @NonNull Object msg) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
@@ -66,7 +67,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public void tell(String name, Object msg, Duration delay) throws UnregisteredRecipientException {
+    public void tell(@NonNull String name, @NonNull Object msg, @NonNull Duration delay) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
@@ -75,7 +76,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException {
+    public void ask(@NonNull String name, @NonNull Object msg, @NonNull ReplyHandler handler) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
@@ -84,7 +85,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException {
+    public <F> @NonNull CompletableFuture<F> ask(@NonNull String name, @NonNull Object msg) throws UnregisteredRecipientException {
         Optional<Actor> actor = actorSystem.getOptionalActor(name);
         if (actor.isEmpty()) {
             throw new UnregisteredRecipientException("Actor with name " + name + " does not exist");
@@ -102,19 +103,19 @@ public class MessageContext implements LintStoneMessageEventContext {
 
 
     @Override
-    public LintStoneActorAccessor getActor(String name) {
+    public @NonNull LintStoneActorAccessor getActor(@NonNull String name) {
         // give an empty ref, that is filled on demand.
         return new SelfUpdatingActorAccessor(name, null, actorSystem, self);
     }
 
 
     @Override
-    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, ActorSettings settings) {
+    public @NonNull LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, Object initMessage, @NonNull ActorSettings settings) {
         return actorSystem.registerActor(name, factory, self, settings, initMessage);
     }
 
     @Override
-    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings) {
+    public @NonNull LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings) {
         return actorSystem.registerActor(name, factory, self, settings, null);
     }
 
@@ -129,7 +130,7 @@ public class MessageContext implements LintStoneMessageEventContext {
     }
 
     @Override
-    public boolean unregister(String actorName) {
+    public boolean unregister(@NonNull String actorName) {
         return actorSystem.unregisterActor(actorName);
     }
 }

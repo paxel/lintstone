@@ -1,5 +1,7 @@
 package paxel.lintstone.api;
 
+import lombok.NonNull;
+
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +28,7 @@ public interface LintStoneMessageEventContext {
      * @param consumer The consumer of messages of the class.
      * @return the context itself
      */
-    <T> MessageAccess inCase(Class<T> clazz, LintStoneEventHandler<T> consumer);
+    <T> @NonNull MessageAccess inCase(@NonNull Class<T> clazz, @NonNull LintStoneEventHandler<T> consumer);
 
     /**
      * Is executed if no
@@ -35,7 +37,7 @@ public interface LintStoneMessageEventContext {
      *
      * @param message The message
      */
-    void otherwise(LintStoneEventHandler<Object> message);
+    void otherwise(@NonNull LintStoneEventHandler<Object> message);
 
     /**
      * Replies to the sender of the message. If the sender is no actor, the
@@ -47,7 +49,7 @@ public interface LintStoneMessageEventContext {
      *                                        name.
      * @throws NoSenderException              if there is no sender for the current message.
      */
-    void reply(Object msg) throws NoSenderException, UnregisteredRecipientException;
+    void reply(@NonNull Object msg) throws NoSenderException, UnregisteredRecipientException;
 
     /**
      * Sends the message to the actor with the registered name.
@@ -57,7 +59,7 @@ public interface LintStoneMessageEventContext {
      * @throws UnregisteredRecipientException if there is no actor with that
      *                                        name.
      */
-    void tell(String name, Object msg) throws UnregisteredRecipientException;
+    void tell(@NonNull String name, @NonNull Object msg) throws UnregisteredRecipientException;
 
     /**
      * Sends the message to the actor with the registered name.
@@ -68,7 +70,7 @@ public interface LintStoneMessageEventContext {
      * @throws UnregisteredRecipientException if there is no actor with that
      *                                        name.
      */
-    void tell(String name, Object msg, Duration delay) throws UnregisteredRecipientException;
+    void tell(@NonNull String name, @NonNull Object msg, @NonNull Duration delay) throws UnregisteredRecipientException;
 
     /**
      * Sends the message to the actor with the registered name.
@@ -80,7 +82,7 @@ public interface LintStoneMessageEventContext {
      * @throws UnregisteredRecipientException if there is no actor with that
      *                                        name.
      */
-    void ask(String name, Object msg, ReplyHandler handler) throws UnregisteredRecipientException;
+    void ask(@NonNull String name, @NonNull Object msg, @NonNull ReplyHandler handler) throws UnregisteredRecipientException;
 
     /**
      * Sends the message to the actor with the registered name.
@@ -94,7 +96,7 @@ public interface LintStoneMessageEventContext {
      * @throws UnregisteredRecipientException if there is no actor with that
      *                                        name.
      */
-    <F> CompletableFuture<F> ask(String name, Object msg) throws UnregisteredRecipientException;
+    <F> @NonNull CompletableFuture<F> ask(@NonNull String name, @NonNull Object msg) throws UnregisteredRecipientException;
 
     /**
      * Retrieve the actor with given name. This method will always return an
@@ -105,7 +107,7 @@ public interface LintStoneMessageEventContext {
      * @param name The name of the actor.
      * @return The actor access.
      */
-    LintStoneActorAccessor getActor(String name);
+    @NonNull LintStoneActorAccessor getActor(@NonNull String name);
 
     /**
      * This method delegates to
@@ -117,7 +119,7 @@ public interface LintStoneMessageEventContext {
      * @param settings    The actor settings.
      * @return The new or old actor access.
      */
-    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, ActorSettings settings);
+    @NonNull LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, Object initMessage, @NonNull ActorSettings settings);
 
     /**
      * This method delegates to
@@ -128,7 +130,7 @@ public interface LintStoneMessageEventContext {
      * @param settings The actor settings.
      * @return The new or old actor access.
      */
-    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);
+    @NonNull LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings);
 
     /**
      * Unregisters this Actor.
@@ -150,6 +152,6 @@ public interface LintStoneMessageEventContext {
      * @param actorName The actor to be unregistered.
      * @return {@code true} if the actor was unregistered
      */
-    boolean unregister(String actorName);
+    boolean unregister(@NonNull String actorName);
 
 }

@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.*;
 
 import java.time.Duration;
@@ -14,10 +15,10 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ActorSystem implements LintStoneSystem {
 
-    private final Map<String, Actor> actors = new ConcurrentHashMap<>();
-    private final ProcessorFactory processorFactory;
-    private final Scheduler scheduler;
-    private final ReentrantLock lock = new ReentrantLock();
+    private final @NonNull Map<String, Actor> actors = new ConcurrentHashMap<>();
+    private final @NonNull ProcessorFactory processorFactory;
+    private final @NonNull Scheduler scheduler;
+    private final @NonNull ReentrantLock lock = new ReentrantLock();
 
     /**
      * Creates a new ActorSystem with default {@link GroupingExecutor} and {@link SimpleScheduler}.
@@ -35,34 +36,34 @@ public class ActorSystem implements LintStoneSystem {
      * @param processorFactory the processor factory to use.
      * @param scheduler        the scheduler to use.
      */
-    public ActorSystem(ProcessorFactory processorFactory, Scheduler scheduler) {
+    public ActorSystem(@NonNull ProcessorFactory processorFactory, @NonNull Scheduler scheduler) {
         this.processorFactory = processorFactory;
         this.scheduler = scheduler;
     }
 
     @Override
-    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings, Object initMessage) {
+    public LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings, Object initMessage) {
         return registerActor(name, factory, null, settings, initMessage);
     }
 
     @Override
-    public LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings) {
+    public LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, @NonNull ActorSettings settings) {
         return registerActor(name, factory, null, settings, null);
     }
 
     @Override
-    public LintStoneActorAccessor getActor(String name) {
+    public LintStoneActorAccessor getActor(@NonNull String name) {
         return new SelfUpdatingActorAccessor(name, actors.get(name), this, null);
     }
 
-    LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, ActorSettings settings, Object initMessage) {
+    LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, SelfUpdatingActorAccessor sender, @NonNull ActorSettings settings, Object initMessage) {
         SequentialProcessorBuilder sequentialProcessorBuilder = processorFactory.create();
         sequentialProcessorBuilder.setErrorHandler(settings.errorHandler());
         return registerActor(name, factory, initMessage, sender, sequentialProcessorBuilder, settings.queueLimit());
     }
 
 
-    private LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, SequentialProcessorBuilder sequentialProcessor, int queueLimit) {
+    private LintStoneActorAccessor registerActor(@NonNull String name, @NonNull LintStoneActorFactory factory, Object initMessage, SelfUpdatingActorAccessor sender, @NonNull SequentialProcessorBuilder sequentialProcessor, int queueLimit) {
         try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             Actor existing = actors.get(name);
             if (existing != null) {
@@ -95,7 +96,7 @@ public class ActorSystem implements LintStoneSystem {
     }
 
     @Override
-    public boolean shutDownAndWait(Duration timeout) throws InterruptedException {
+    public boolean shutDownAndWait(@NonNull Duration timeout) throws InterruptedException {
         shutdownActors(false);
         processorFactory.shutdown();
         scheduler.shutDown();
@@ -117,7 +118,7 @@ public class ActorSystem implements LintStoneSystem {
 
 
     @Override
-    public boolean unregisterActor(String name) {
+    public boolean unregisterActor(@NonNull String name) {
         try (AutoClosableLock ignored = new AutoClosableLock(lock)) {
             Actor remove = actors.remove(name);
             if (remove != null) {

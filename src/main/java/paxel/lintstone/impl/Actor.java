@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.*;
 
 import java.time.Duration;
@@ -16,20 +17,21 @@ import java.util.logging.Logger;
 class Actor {
 
     private static final Logger LOG = Logger.getLogger(Actor.class.getName());
-    private final String name;
 
-    private final LintStoneActor actorInstance;
-    private final SequentialProcessor sequentialProcessor;
+    private final @NonNull String name;
+
+    private final @NonNull LintStoneActor actorInstance;
+    private final @NonNull SequentialProcessor sequentialProcessor;
     private volatile boolean registered = true;
-    private final AtomicLong totalMessages = new AtomicLong();
-    private final AtomicLong totalReplies = new AtomicLong();
-    private final MessageContextFactory messageContextFactory;
-    private final Scheduler scheduler;
+    private final @NonNull AtomicLong totalMessages = new AtomicLong();
+    private final @NonNull AtomicLong totalReplies = new AtomicLong();
+    private final @NonNull MessageContextFactory messageContextFactory;
+    private final @NonNull Scheduler scheduler;
     private final int queueLimit;
 
-    private final ConcurrentLinkedQueue<MessageTask> taskPool = new ConcurrentLinkedQueue<>();
+    private final @NonNull ConcurrentLinkedQueue<MessageTask> taskPool = new ConcurrentLinkedQueue<>();
 
-    Actor(String name, LintStoneActor actorInstance, SequentialProcessor sequentialProcessor, ActorSystem system, SelfUpdatingActorAccessor sender, Scheduler scheduler, int queueLimit) {
+    Actor(@NonNull String name, @NonNull LintStoneActor actorInstance, @NonNull SequentialProcessor sequentialProcessor, @NonNull ActorSystem system, SelfUpdatingActorAccessor sender, @NonNull Scheduler scheduler, int queueLimit) {
         this.name = name;
         this.actorInstance = actorInstance;
         this.sequentialProcessor = sequentialProcessor;
@@ -43,7 +45,7 @@ class Actor {
         return registered;
     }
 
-    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
+    void send(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
@@ -64,7 +66,7 @@ class Actor {
         totalMessages.incrementAndGet();
     }
 
-    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Duration delay) throws UnregisteredRecipientException {
+    void send(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, @NonNull Duration delay) throws UnregisteredRecipientException {
         scheduler.runLater(() -> {
             if (registered) {
                 sequentialProcessor.add(createTask(message, sender, replyHandler));
@@ -74,7 +76,7 @@ class Actor {
     }
 
 
-    void send(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
+    void send(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
@@ -87,7 +89,7 @@ class Actor {
         totalMessages.incrementAndGet();
     }
 
-    private MessageTask createTask(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+    private MessageTask createTask(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
         MessageTask task = taskPool.poll();
         if (task == null) {
             task = new MessageTask();
@@ -97,11 +99,11 @@ class Actor {
     }
 
     private class MessageTask implements Runnable {
-        private Object message;
+        private @NonNull Object message;
         private SelfUpdatingActorAccessor sender;
         private ReplyHandler replyHandler;
 
-        void reset(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+        void reset(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
             this.message = message;
             this.sender = sender;
             this.replyHandler = replyHandler;
@@ -138,7 +140,7 @@ class Actor {
      *                     If the replyHandler is given, the relation between msg and reply is well-defined.
      *                     All reply during the handling of an ask are delegated to the replyHandler.
      */
-    private void handleReply(Object reply, SelfUpdatingActorAccessor self, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+    private void handleReply(@NonNull Object reply, @NonNull SelfUpdatingActorAccessor self, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
         if (replyHandler == null) {
             // we don't have to handle this other than just sending it to the sender of the original message.
             Optional.ofNullable(sender)
@@ -166,7 +168,7 @@ class Actor {
 
     private final ConcurrentLinkedQueue<ReplyTask> replyTaskPool = new ConcurrentLinkedQueue<>();
 
-    public void run(ReplyHandler replyHandler, Object reply) {
+    public void run(ReplyHandler replyHandler, @NonNull Object reply) {
         if (!registered) {
             throw new UnregisteredRecipientException("Actor " + name + " is not registered");
         }
@@ -182,9 +184,9 @@ class Actor {
 
     private class ReplyTask implements Runnable {
         private ReplyHandler replyHandler;
-        private Object reply;
+        private @NonNull Object reply;
 
-        void reset(ReplyHandler replyHandler, Object reply) {
+        void reset(ReplyHandler replyHandler, @NonNull Object reply) {
             this.replyHandler = replyHandler;
             this.reply = reply;
         }

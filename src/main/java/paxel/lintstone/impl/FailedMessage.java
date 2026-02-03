@@ -1,8 +1,7 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.LintStoneFailedMessage;
-
-import java.util.Objects;
 
 /**
  * Implementation of {@link LintStoneFailedMessage}.
@@ -11,15 +10,15 @@ import java.util.Objects;
  * @param cause     the cause of the failure.
  * @param actorName the name of the failing actor.
  */
-public record FailedMessage(Object message, Throwable cause, String actorName) implements LintStoneFailedMessage {
+public record FailedMessage(@NonNull Object message, @NonNull Throwable cause, @NonNull String actorName) implements LintStoneFailedMessage {
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof FailedMessage that)) return false;
 
-        if (!Objects.equals(message, that.message)) return false;
-        if (!Objects.equals(cause, that.cause)) return false;
+        if (!message.equals(that.message)) return false;
+        if (!cause.equals(that.cause)) return false;
         return actorName.equals(that.actorName);
     }
 

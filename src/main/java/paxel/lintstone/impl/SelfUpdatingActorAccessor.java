@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.LintStoneActorAccessor;
 import paxel.lintstone.api.ReplyHandler;
 import paxel.lintstone.api.UnregisteredRecipientException;
@@ -13,11 +14,11 @@ import java.util.concurrent.CompletableFuture;
 public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
 
     private final SelfUpdatingActorAccessor sender;
-    private final String name;
-    private final ActorSystem system;
+    private final @NonNull String name;
+    private final @NonNull ActorSystem system;
     private volatile Actor actor;
 
-    SelfUpdatingActorAccessor(String name, Actor actor, ActorSystem system, SelfUpdatingActorAccessor sender) {
+    SelfUpdatingActorAccessor(@NonNull String name, Actor actor, @NonNull ActorSystem system, SelfUpdatingActorAccessor sender) {
         this.name = name;
         this.actor = actor;
         this.system = system;
@@ -25,12 +26,12 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
     @Override
-    public void tell(Object message) throws UnregisteredRecipientException {
+    public void tell(@NonNull Object message) throws UnregisteredRecipientException {
         tell(message, sender, null);
     }
 
     @Override
-    public void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
+    public void tellWithBackPressure(@NonNull Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         tell(message, sender, null, blockThreshold);
     }
 
@@ -40,7 +41,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
      * @param runnable The runnable that has to be processed by the actor.
      * @throws UnregisteredRecipientException In case the actor has been unregistered.
      */
-    void run(ReplyHandler runnable, Object reply) throws UnregisteredRecipientException {
+    void run(@NonNull ReplyHandler runnable, @NonNull Object reply) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
         }
@@ -61,11 +62,11 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
      * @param sender  the sender of the message.
      * @throws UnregisteredRecipientException if the actor is not registered.
      */
-    public void send(Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
+    public void send(@NonNull Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
         tell(message, sender, null);
     }
 
-    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException, InterruptedException {
+    private void tell(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler, Integer blockThreshold) throws UnregisteredRecipientException, InterruptedException {
         if (actor == null) {
             updateActor();
         }
@@ -79,7 +80,7 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
         }
     }
 
-    private void tell(Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
+    private void tell(@NonNull Object message, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) throws UnregisteredRecipientException {
         if (actor == null) {
             updateActor();
         }
@@ -109,13 +110,13 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
     }
 
     @Override
-    public void ask(Object message, ReplyHandler replyHandler) throws UnregisteredRecipientException {
+    public void ask(@NonNull Object message, @NonNull ReplyHandler replyHandler) throws UnregisteredRecipientException {
         // replyHandler is required, therefore not Optional.ofNullable
         tell(message, sender, replyHandler);
     }
 
     @Override
-    public <F> CompletableFuture<F> ask(Object message) throws UnregisteredRecipientException {
+    public <F> @NonNull CompletableFuture<F> ask(@NonNull Object message) throws UnregisteredRecipientException {
         CompletableFuture<F> result = new CompletableFuture<>();
         tell(message, sender, mec -> mec.otherwise((reply, resultMec) -> {
             try {

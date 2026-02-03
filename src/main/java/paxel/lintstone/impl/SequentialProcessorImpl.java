@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.ErrorHandler;
 import paxel.lintstone.api.ErrorHandlerDecision;
 
@@ -22,7 +23,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     private final Condition empty = lock.newCondition();
     private final Semaphore backPressureSemaphore = new Semaphore(0);
 
-    private final ErrorHandler errorHandler;
+    private final @NonNull ErrorHandler errorHandler;
 
     private final AtomicReference<RunStatus> status = new AtomicReference<>(ACTIVE);
 
@@ -35,12 +36,12 @@ public class SequentialProcessorImpl implements SequentialProcessor {
      *
      * @param errorHandler the error handler.
      */
-    public SequentialProcessorImpl(ErrorHandler errorHandler) {
+    public SequentialProcessorImpl(@NonNull ErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
 
     @Override
-    public void add(Runnable runnable) {
+    public void add(@NonNull Runnable runnable) {
         if (status.get() != ACTIVE || endGracefully.get()) {
             return;
         }
@@ -57,7 +58,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     }
 
     @Override
-    public boolean addWithBackPressure(Runnable runnable, int blockThreshold) throws InterruptedException {
+    public boolean addWithBackPressure(@NonNull Runnable runnable, int blockThreshold) throws InterruptedException {
         if (blockThreshold <= 0) {
             throw new IllegalArgumentException("blockThreshold must be greater than 0");
         }
@@ -197,7 +198,7 @@ public class SequentialProcessorImpl implements SequentialProcessor {
         }
     }
 
-    private void runNextMessage(Runnable runnable) {
+    private void runNextMessage(@NonNull Runnable runnable) {
         try {
             runnable.run();
         } catch (Exception e) {

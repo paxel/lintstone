@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.ErrorHandler;
 import paxel.lintstone.api.ActorSettings;
 
@@ -8,6 +9,6 @@ import paxel.lintstone.api.ActorSettings;
  *
  * @param errorHandler the error handler.
  */
-public record ActorSettingsImpl(ErrorHandler errorHandler, int queueLimit) implements ActorSettings {
+public record ActorSettingsImpl(@NonNull ErrorHandler errorHandler, int queueLimit) implements ActorSettings {
 
 }

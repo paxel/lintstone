@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.ActorSettings;
 import paxel.lintstone.api.ErrorHandler;
 import paxel.lintstone.api.ErrorHandlerDecision;
@@ -8,7 +9,7 @@ import paxel.lintstone.api.ErrorHandlerDecision;
  * Builder for {@link ActorSettings}.
  */
 public class ActorSettingsBuilder {
-    private ErrorHandler errorHandler = x -> ErrorHandlerDecision.CONTINUE;
+    private @NonNull ErrorHandler errorHandler = x -> ErrorHandlerDecision.CONTINUE;
     private int queueLimit;
 
     /**
@@ -23,7 +24,7 @@ public class ActorSettingsBuilder {
      * @param errorHandler the error handler.
      * @return this builder.
      */
-    public ActorSettingsBuilder setErrorHandler(ErrorHandler errorHandler) {
+    public ActorSettingsBuilder setErrorHandler(@NonNull ErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
         return this;
     }

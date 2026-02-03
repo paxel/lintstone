@@ -1,5 +1,6 @@
 package paxel.lintstone.impl;
 
+import lombok.NonNull;
 import paxel.lintstone.api.Scheduler;
 
 import java.time.Duration;
@@ -31,7 +32,7 @@ public class SimpleScheduler implements Scheduler, Runnable {
     }
 
     @Override
-    public void runLater(Runnable runnable, Duration duration) {
+    public void runLater(@NonNull Runnable runnable, @NonNull Duration duration) {
         lock.lock();
         try {
             if (stop.get()) {
@@ -88,7 +89,7 @@ public class SimpleScheduler implements Scheduler, Runnable {
         }
     }
 
-    private record ScheduledRunnable(Instant start, long sequenceNumber, Runnable runnable) implements Comparable<ScheduledRunnable> {
+    private record ScheduledRunnable(@NonNull Instant start, long sequenceNumber, @NonNull Runnable runnable) implements Comparable<ScheduledRunnable> {
         @Override
         public int compareTo(ScheduledRunnable o) {
             int res = this.start.compareTo(o.start);
