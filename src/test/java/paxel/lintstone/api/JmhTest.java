@@ -24,8 +24,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 // only fork 1 JVM per benchmark
 @State(Scope.Benchmark)
-@Warmup(iterations = 3, time = 2)
-@Measurement(iterations = 3, time = 2)
+@Warmup(iterations = 5, time = 5)
+@Measurement(iterations = 5, time = 5)
 @Fork(1)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class JmhTest {
@@ -44,47 +44,47 @@ public class JmhTest {
     }
 
     @Benchmark
-    @OperationsPerInvocation(1_000)
+    @OperationsPerInvocation(1_000_000)
     public void run_____1_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 1;
-        int messages = 1_000;
+        int messages = 1_000_000;
 
         run(actorCount, messages, blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(2_000)
+    @OperationsPerInvocation(1_000_000)
     public void run_____2_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 2;
-        int messages = 2_000;
+        int messages = 1_000_000;
 
         run(actorCount, messages, blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(10_000)
+    @OperationsPerInvocation(1_000_000)
     public void run____10_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 10;
-        int messages = 10_000;
+        int messages = 1_000_000;
 
         run(actorCount, messages, blackhole);
     }
 
 
     @Benchmark
-    @OperationsPerInvocation(20_000)
+    @OperationsPerInvocation(1_000_000)
     public void run____20_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 20;
-        int messages = 20_000;
+        int messages = 1_000_000;
 
         run(actorCount, messages, blackhole);
     }
 
     @Benchmark
-    @OperationsPerInvocation(30_000)
+    @OperationsPerInvocation(1_000_000)
     public void run____30_Actors(Blackhole blackhole) throws InterruptedException, ExecutionException {
         int actorCount = 30;
-        int messages = 30_000;
+        int messages = 1_000_000;
 
         run(actorCount, messages, blackhole);
     }

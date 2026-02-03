@@ -159,17 +159,29 @@ The system has undergone significant optimizations to handle millions of message
 *   **Lock Reduction:** Replaced heavy `ReentrantLock` usage with signaling semaphores and atomic variables.
 *   **Memory Efficiency:** Replaced `LinkedList` with `ConcurrentLinkedQueue` for better cache locality.
 
-## Benchmarks
+### Benchmarks
 
 The following benchmarks show the throughput on a standard development machine (OpenJDK 21, Virtual Threads enabled).
+
+#### How to run benchmarks
+You can run the benchmarks using Maven:
+```bash
+mvn test-compile
+java -cp "target/classes:target/test-classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]')" org.openjdk.jmh.Main ActorBenchmark
+```
+Or for a full system lifecycle test:
+```bash
+java -cp "target/classes:target/test-classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]')" org.openjdk.jmh.Main JmhTest
+```
 
 | Benchmark | Throughput | Description |
 | :--- | :--- | :--- |
 | `tellSingleActor` | ~2.7M ops/s | Single producer sending to one actor |
 | `tellSingleActorContention` | ~3.4M ops/s | 4 producers sending to one actor |
 | `askSingleActor` | ~52K ops/s | Request-response roundtrip |
+| `tellRoundRobinManyActors` | ~2.5M ops/s | Sending to 1000 different actors |
 
-*Note: Performance may vary based on CPU and message complexity.*
+*Note: Performance may vary based on CPU and message complexity. For accurate measurements, ensure your system is idle and avoid background activity (like mouse movements during very short benchmarks).*
 
 ---
 ## License

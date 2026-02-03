@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import paxel.lintstone.api.actors.StupidActor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +25,7 @@ public class FailingTests {
     public static final String FAILING = "failing";
     public static final String NOT_EXISTENT = "no";
     final CountDownLatch latch = new CountDownLatch(1);
-    List<Object> errorMessage = new ArrayList<>();
+    private final List<Object> errorMessage = Collections.synchronizedList(new ArrayList<>());
 
     public FailingTests() {
     }
@@ -74,6 +75,13 @@ public class FailingTests {
         System.out.println("down");
     }
 
+    private void waitForErrorSize(int expectedSize) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while (errorMessage.size() < expectedSize && System.currentTimeMillis() - start < 5000) {
+            Thread.sleep(10);
+        }
+    }
+
     @Test
     public void testGetDataOut() throws InterruptedException, ExecutionException {
         LintStoneSystem system = LintStoneSystemFactory.create();
@@ -90,6 +98,7 @@ public class FailingTests {
 
         // the first try should have created a message here,
         // and now it does because we fixed the error propagation
+        waitForErrorSize(1);
         assertThat(errorMessage).hasSize(1);
 
         system.shutDownAndWait();

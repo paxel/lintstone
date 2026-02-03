@@ -10,6 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ActorLifecycleTest {
 
+    private void waitForAtomicInteger(AtomicInteger atomic, int expected) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while (atomic.get() < expected && System.currentTimeMillis() - start < 5000) {
+            Thread.sleep(10);
+        }
+    }
+
     @Test
     void testUnregisterActor() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create();
@@ -33,8 +40,8 @@ public class ActorLifecycleTest {
         // After unregister, tell should throw exception
         assertThrows(UnregisteredRecipientException.class, () -> actor.tell("msg3"));
         
-        // Wait a bit to ensure queued messages are processed
-        Thread.sleep(100);
+        // Wait to ensure queued messages are processed
+        waitForAtomicInteger(processCount, 2);
         
         // Queued messages should still be processed
         assertThat(processCount.get()).isEqualTo(2);
@@ -59,7 +66,10 @@ public class ActorLifecycleTest {
         actor.tell("die");
         
         // Wait for processing
-        Thread.sleep(100);
+        long start = System.currentTimeMillis();
+        while (!unregisteredRef.get() && System.currentTimeMillis() - start < 5000) {
+            Thread.sleep(10);
+        }
         
         assertThat(unregisteredRef.get()).isTrue();
         assertThat(actor.exists()).isFalse();
@@ -96,7 +106,8 @@ public class ActorLifecycleTest {
         // The accessor should now point to the new actor
         accessor.tell("msg");
         
-        Thread.sleep(100);
+        waitForAtomicInteger(actor1Count, 1);
+        waitForAtomicInteger(actor2Count, 1);
         
         assertThat(actor1Count.get()).isEqualTo(1);
         assertThat(actor2Count.get()).isEqualTo(1);
