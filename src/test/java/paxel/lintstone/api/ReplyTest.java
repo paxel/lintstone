@@ -27,8 +27,10 @@ public class ReplyTest {
                 ActorSettings.DEFAULT, "Alex");
         LintStoneActorAccessor floor = system.registerActor("floor", () -> a -> {
             // someone died
-            a.inCase(String.class, (n, mec) -> System.out.println(n + " lost"));
-            latch.countDown();
+            a.inCase(String.class, (n, mec) -> {
+                System.out.println(n + " lost");
+                latch.countDown();
+            });
         }, ActorSettings.DEFAULT);
 
         uta.tell(new StartMessage());

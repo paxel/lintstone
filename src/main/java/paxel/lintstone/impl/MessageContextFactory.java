@@ -31,8 +31,17 @@ public class MessageContextFactory {
      * @return The MessageContext.
      */
     public @NonNull MessageContext create(@NonNull Object message, @NonNull BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
-        MessageContext context = new MessageContext(actorSystem, self);
+        MessageContext context = createContext();
         context.reset(message, replyHandler);
         return context;
+    }
+
+    /**
+     * Creates a new MessageContext.
+     *
+     * @return The MessageContext.
+     */
+    public @NonNull MessageContext createContext() {
+        return new MessageContext(actorSystem, self);
     }
 }

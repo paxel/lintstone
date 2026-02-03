@@ -15,9 +15,11 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     private final @NonNull ActorSystem actorSystem;
     private final @NonNull SelfUpdatingActorAccessor self;
-    private final @NonNull MessageAccess messageAccess = new MessageAccess();
+    private final @NonNull DynamicMessageAccess messageAccess = new DynamicMessageAccess();
+    private final @NonNull DecisionTreeBuilder decisionTreeBuilder = new DecisionTreeBuilder();
     private @NonNull Object message;
     private @NonNull BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
+    private boolean recording = false;
 
     /**
      * Creates a new message context.
@@ -44,11 +46,18 @@ public class MessageContext implements LintStoneMessageEventContext {
 
     @Override
     public <T> @NonNull MessageAccess inCase(@NonNull Class<T> clazz, @NonNull LintStoneEventHandler<T> consumer) {
+        if (recording) {
+            return decisionTreeBuilder.inCase(clazz, consumer);
+        }
         return messageAccess.inCase(clazz, consumer);
     }
 
     @Override
     public void otherwise(@NonNull LintStoneEventHandler<Object> catchAll) {
+        if (recording) {
+            decisionTreeBuilder.otherwise(catchAll);
+            return;
+        }
         messageAccess.otherwise(catchAll);
     }
 
@@ -132,5 +141,13 @@ public class MessageContext implements LintStoneMessageEventContext {
     @Override
     public boolean unregister(@NonNull String actorName) {
         return actorSystem.unregisterActor(actorName);
+    }
+
+    void setRecording(boolean recording) {
+        this.recording = recording;
+    }
+
+    DecisionTree getDecisionTree() {
+        return decisionTreeBuilder.build();
     }
 }

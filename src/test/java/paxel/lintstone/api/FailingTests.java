@@ -42,10 +42,10 @@ public class FailingTests {
     @Test
     public void testFailedMessageResponse() throws InterruptedException {
         LintStoneSystem system = LintStoneSystemFactory.create();
-        system.registerActor(STOP_ACTOR, () -> a -> {
+        system.registerActor(STOP_ACTOR, () -> a -> a.otherwise((msg, ctx) -> {
             System.out.println("stop received. countdown latch");
             latch.countDown();
-        }, ActorSettings.create().setErrorHandler(this::addError).build());
+        }), ActorSettings.create().setErrorHandler(this::addError).build());
 
 
         // This creates an actor that will create a FAILING actor
@@ -79,7 +79,7 @@ public class FailingTests {
         LintStoneSystem system = LintStoneSystemFactory.create();
 
 
-        LintStoneActorAccessor echoActor = system.registerActor(ECHO_ACTOR, () -> a -> a.reply("echo"), ActorSettings.create().setErrorHandler(this::addError).build());
+        LintStoneActorAccessor echoActor = system.registerActor(ECHO_ACTOR, () -> a -> a.otherwise((msg, ctx) -> ctx.reply("echo")), ActorSettings.create().setErrorHandler(this::addError).build());
 
         // this message goes to an actor that wants to reply. but can't, because we are calling from outside the actor system
         // so this should be a message in the errorHandler

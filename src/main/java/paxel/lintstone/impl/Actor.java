@@ -4,6 +4,7 @@ import lombok.NonNull;
 import paxel.lintstone.api.*;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,15 +16,16 @@ import java.util.concurrent.atomic.AtomicLong;
 class Actor {
 
     private final @NonNull String name;
-
     private final @NonNull LintStoneActor actorInstance;
     private final @NonNull SequentialProcessor sequentialProcessor;
-    private volatile boolean registered = true;
     private final @NonNull AtomicLong totalMessages = new AtomicLong();
     private final @NonNull AtomicLong totalReplies = new AtomicLong();
     private final @NonNull MessageContextFactory messageContextFactory;
     private final @NonNull Scheduler scheduler;
+    private final DecisionTree decisionTree;
+
     private final int queueLimit;
+    private volatile boolean registered = true;
 
     private final @NonNull ConcurrentLinkedQueue<MessageTask> taskPool = new ConcurrentLinkedQueue<>();
 
@@ -34,6 +36,14 @@ class Actor {
         this.scheduler = scheduler;
         this.queueLimit = queueLimit;
         messageContextFactory = new MessageContextFactory(system, new SelfUpdatingActorAccessor(name, this, system, sender));
+        MessageContext recordingContext = messageContextFactory.createContext();
+        recordingContext.setRecording(true);
+        try {
+            actorInstance.newMessageEvent(recordingContext);
+        } finally {
+            recordingContext.setRecording(false);
+        }
+        this.decisionTree = recordingContext.getDecisionTree();
     }
 
 
@@ -107,11 +117,10 @@ class Actor {
 
         @Override
         public void run() {
-            // create mec and delegate replies to our handleReply method
-            MessageContext mec = messageContextFactory.create(message, (msg, self) -> Actor.this.handleReply(msg, self, sender, replyHandler));
+            MessageContext ctx = messageContextFactory.create(message, (msg, self) -> Actor.this.handleReply(msg, self, sender, replyHandler));
             // process message
             try {
-                actorInstance.newMessageEvent(mec);
+                decisionTree.handle(message, ctx);
             } catch (Exception e) {
                 if (sender != null) {
                     sender.tell(new FailedMessage(message, e, name));
@@ -135,20 +144,16 @@ class Actor {
      *                     All reply during the handling of an ask are delegated to the replyHandler.
      */
     private void handleReply(@NonNull Object reply, @NonNull SelfUpdatingActorAccessor self, SelfUpdatingActorAccessor sender, ReplyHandler replyHandler) {
+        // we have a reply handler and a sender. so we want the sender to execute the result itself
+        // result handler without sender. this was asked from outside.
+        // we could just execute the runnable here, but then the processing of the msg would be "interrupted" with the processing
+        // of the reply. so we enqueue it in ourselves.
         if (replyHandler == null) {
             // we don't have to handle this other than just sending it to the sender of the original message.
             Optional.ofNullable(sender)
                     .orElseThrow(() -> new NoSenderException("Message has no Sender"))
                     .send(reply, self);
-        } else if (sender != null) {
-            // we have a reply handler and a sender. so we want the sender to execute the result itself
-            sender.run(replyHandler, reply);
-        } else {
-            // result handler without sender. this was asked from outside.
-            // we could just execute the runnable here, but then the processing of the msg would be "interrupted" with the processing
-            // of the reply. so we enqueue it in ourselves.
-            self.run(replyHandler, reply);
-        }
+        } else Objects.requireNonNullElse(sender, self).run(replyHandler, reply);
     }
 
     void unregisterGracefully() {
@@ -187,10 +192,9 @@ class Actor {
 
         @Override
         public void run() {
-            // we update the message context with the reply and give it to the reply handler
-            MessageContext mec = messageContextFactory.create(reply, (msg, self) -> Actor.this.handleReply(msg, self, null, null));
+            MessageContext ctx = messageContextFactory.create(reply, (msg, self) -> Actor.this.handleReply(msg, self, null, null));
             try {
-                replyHandler.process(mec);
+                replyHandler.process(ctx);
             } catch (Exception e) {
                 throw new ProcessingException(LintStoneError.REPLY_PROCESSING_FAILED, "While processing runnable on " + name, e);
             } finally {

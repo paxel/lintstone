@@ -31,7 +31,7 @@ LintStoneSystem system = LintStoneSystemFactory.create();
 ```
 
 ### 2. Define an Actor
-Actors implement the `LintStoneActor` interface and handle messages using a fluent API.
+Actors implement the `LintStoneActor` interface. During initialization, you define a static decision tree to handle messages. This approach minimizes per-message overhead and GC pressure.
 
 ```java
 public class HelloActor implements LintStoneActor {
@@ -155,6 +155,7 @@ LintStone is designed for high throughput and low latency.
 
 ### Performance Optimizations
 The system has undergone significant optimizations to handle millions of messages per second:
+*   **Static Decision Trees:** Actor message handling is pre-compiled into an optimized decision tree during initialization, eliminating definition overhead during message processing.
 *   **Lock Reduction:** Replaced heavy `ReentrantLock` usage with signaling semaphores and atomic variables.
 *   **Memory Efficiency:** Replaced `LinkedList` with `ConcurrentLinkedQueue` for better cache locality.
 

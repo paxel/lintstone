@@ -24,11 +24,13 @@ public class BoundedQueueTest {
         ActorSettings settings = ActorSettings.create().setQueueLimit(limit).build();
         
         LintStoneActorAccessor actor = system.registerActor("test", () -> mec -> {
-            try {
-                blockActor.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            mec.otherwise((msg, ctx) -> {
+                try {
+                    blockActor.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
         }, settings);
 
         // Send 'limit + 1' messages: 1 processing, 'limit' in queue.

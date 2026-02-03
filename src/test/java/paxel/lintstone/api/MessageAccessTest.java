@@ -1,5 +1,6 @@
 package paxel.lintstone.api;
 
+import paxel.lintstone.impl.DynamicMessageAccess;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,7 +22,7 @@ public class MessageAccessTest {
         };
 
         LintStoneMessageEventContext mockCtx = createMockContext();
-        MessageAccess access = new MessageAccess();
+        DynamicMessageAccess access = new DynamicMessageAccess();
         access.reset("test", mockCtx);
 
         access.inCase(String.class, (s, ctx) -> matchCount.incrementAndGet())
@@ -36,7 +37,7 @@ public class MessageAccessTest {
         LintStoneSystem system = LintStoneSystemFactory.create();
         AtomicBoolean otherwiseExecuted = new AtomicBoolean(false);
 
-        MessageAccess access = new MessageAccess();
+        DynamicMessageAccess access = new DynamicMessageAccess();
         access.reset("test", createMockContext());
 
         access.inCase(Integer.class, (i, ctx) -> {})
@@ -55,7 +56,7 @@ public class MessageAccessTest {
     @Test
     void testInheritanceMatch() {
         AtomicBoolean matched = new AtomicBoolean(false);
-        MessageAccess access = new MessageAccess();
+        DynamicMessageAccess access = new DynamicMessageAccess();
         access.reset(new StringBuilder("test"), createMockContext());
 
         access.inCase(CharSequence.class, (cs, ctx) -> matched.set(true));
