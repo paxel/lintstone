@@ -1,6 +1,6 @@
 package paxel.lintstone.api;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import paxel.lintstone.api.actors.CharCount;
 import paxel.lintstone.api.actors.Distributor;
 import paxel.lintstone.api.actors.SorterActor;

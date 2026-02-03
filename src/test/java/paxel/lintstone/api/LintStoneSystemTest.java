@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import paxel.lintstone.api.actors.AdderActor;
 import paxel.lintstone.api.actors.SumActor;
 import paxel.lintstone.api.messages.EndMessage;

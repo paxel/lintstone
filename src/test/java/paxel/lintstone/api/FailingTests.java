@@ -1,8 +1,8 @@
 package paxel.lintstone.api;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import paxel.lintstone.api.actors.StupidActor;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class FailingTests {
         return ErrorHandlerDecision.CONTINUE;
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         errorMessage.clear();
     }
@@ -62,7 +62,7 @@ public class FailingTests {
 
         boolean await = latch.await(10, TimeUnit.SECONDS);
         if (!await)
-            Assert.fail("Timed out without activating latch");
+            Assertions.fail("Timed out without activating latch");
 
         System.out.println("Test is finished");
         // wait for the result
