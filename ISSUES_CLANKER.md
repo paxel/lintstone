@@ -40,12 +40,12 @@ File: `SimpleScheduler.java`
 - Suggested fix:
   - Include a strictly increasing sequence number or tie-breaker (e.g., `System.identityHashCode(runnable)` or an `AtomicLong`) in `compareTo` to ensure strict ordering without equality collisions.~~
 
-### 3) Scheduling allowed after shutdown
+~~### 3) Scheduling allowed after shutdown
 File: `SimpleScheduler.java`
 
 - `runLater(...)` does not check `stop`. After shutdown, new jobs can still be added, but will never be executed.
 - Impact: Silent message loss and potential memory growth.
-- Suggested fix: Guard `runLater` with `if (stop.get()) throw ...` or ignore and log; or return a boolean indicating acceptance.
+- Suggested fix: Guard `runLater` with `if (stop.get()) throw ...` or ignore and log; or return a boolean indicating acceptance.~~
 
 ### 4) Coarse timing and extra `now()` calls in scheduler
 File: `SimpleScheduler.java`
@@ -90,8 +90,8 @@ Files: `SequentialProcessorImpl.java`
 
 ### 9) Minor cleanups and code hygiene
 
-- `SimpleScheduler.wrapRunnable` is unused; can be removed.
-- Several fields in `SimpleScheduler` (`lock`, `newJob`) can be `private`.
+- ~~`SimpleScheduler.wrapRunnable` is unused; can be removed.~~
+- ~~Several fields in `SimpleScheduler` (`lock`, `newJob`) can be `private`.~~
 - Consider using `Condition#signal` instead of `signalAll` where appropriate.
 - Add parameter validation for `addWithBackPressure(..., blockThreshold)` to prevent accidental zero/negative thresholds.
 

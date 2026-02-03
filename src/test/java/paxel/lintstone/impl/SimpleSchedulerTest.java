@@ -68,4 +68,14 @@ class SimpleSchedulerTest {
         assertThat(results).hasSize(numTasks);
         assertThat(finished).isTrue();
     }
+
+    @Test
+    void testRunLaterAfterShutdown() {
+        SimpleScheduler scheduler = new SimpleScheduler();
+        scheduler.shutDown();
+        
+        Assertions.assertThatThrownBy(() -> scheduler.runLater(() -> {}, Duration.ofMillis(100)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Scheduler is shut down");
+    }
 }

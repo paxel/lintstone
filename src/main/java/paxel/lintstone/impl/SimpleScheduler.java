@@ -21,8 +21,8 @@ public class SimpleScheduler implements Scheduler, Runnable {
     private final AtomicLong sequencer = new AtomicLong(0);
 
     private final AtomicBoolean stop = new AtomicBoolean(false);
-    ReentrantLock lock = new ReentrantLock();
-    Condition newJob = lock.newCondition();
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition newJob = lock.newCondition();
 
     /**
      * Creates a new simple scheduler.
@@ -34,6 +34,9 @@ public class SimpleScheduler implements Scheduler, Runnable {
     public void runLater(Runnable runnable, Duration duration) {
         lock.lock();
         try {
+            if (stop.get()) {
+                throw new IllegalStateException("Scheduler is shut down");
+            }
             ScheduledRunnable scheduledRunnable = new ScheduledRunnable(Instant.now().plus(duration), sequencer.getAndIncrement(), runnable);
             jobs.add(scheduledRunnable);
             newJob.signalAll();
@@ -42,14 +45,6 @@ public class SimpleScheduler implements Scheduler, Runnable {
         }
     }
 
-    private TimerTask wrapRunnable(Runnable runnable) {
-        return new TimerTask() {
-            @Override
-            public void run() {
-                runnable.run();
-            }
-        };
-    }
 
     @Override
     public void shutDown() {
