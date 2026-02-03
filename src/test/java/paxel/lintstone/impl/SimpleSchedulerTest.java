@@ -78,4 +78,28 @@ class SimpleSchedulerTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Scheduler is shut down");
     }
+
+    @Test
+    void testShortDelayAccuracy() throws InterruptedException {
+        SimpleScheduler scheduler = new SimpleScheduler();
+        Thread thread = new Thread(scheduler);
+        thread.start();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        long startTime = System.nanoTime();
+
+        // Schedule for 50ms
+        scheduler.runLater(latch::countDown, Duration.ofMillis(50));
+
+        boolean completed = latch.await(1, TimeUnit.SECONDS);
+        long durationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
+
+        scheduler.shutDown();
+        thread.join(1000);
+
+        assertThat(completed).isTrue();
+        // Accuracy should be much better than 100ms now.
+        assertThat(durationMillis).as("Duration should be close to 50ms, but was " + durationMillis)
+                .isLessThan(150); // 150 is a safe margin for CI/test environments
+    }
 }

@@ -47,13 +47,13 @@ File: `SimpleScheduler.java`
 - Impact: Silent message loss and potential memory growth.
 - Suggested fix: Guard `runLater` with `if (stop.get()) throw ...` or ignore and log; or return a boolean indicating acceptance.~~
 
-### 4) Coarse timing and extra `now()` calls in scheduler
+~~### 4) Coarse timing and extra `now()` calls in scheduler
 File: `SimpleScheduler.java`
-
-- The loop enforces a minimum wait of 100 ms: `await(Math.max(100L, delta + 10), ...)` which reduces timing accuracy for short delays (e.g., 10–50 ms).
-- `Instant.now()` is called multiple times per iteration; compute once to reduce overhead and skew.
-- Impact: Larger-than-expected delays and jitter; unnecessary system calls.
-- Suggested fix: Cache `now` once per loop iteration; use smaller minimum wait or adaptive strategy.
+ 
+ - The loop enforces a minimum wait of 100 ms: `await(Math.max(100L, delta + 10), ...)` which reduces timing accuracy for short delays (e.g., 10–50 ms).
+ - `Instant.now()` is called multiple times per iteration; compute once to reduce overhead and skew.
+ - Impact: Larger-than-expected delays and jitter; unnecessary system calls.
+ - Suggested fix: Cache `now` once per loop iteration; use smaller minimum wait or adaptive strategy.~~
 
 ### 5) Potential producer starvation on shutdown/backpressure
 Files: `SequentialProcessorImpl.java`

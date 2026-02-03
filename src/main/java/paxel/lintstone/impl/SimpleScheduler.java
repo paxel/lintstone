@@ -68,9 +68,12 @@ public class SimpleScheduler implements Scheduler, Runnable {
                         newJob.await();
                     }
                     if (!jobs.isEmpty()) {
-                        if (jobs.getFirst().start.isAfter(Instant.now())) {
+                        Instant now = Instant.now();
+                        ScheduledRunnable first = jobs.getFirst();
+                        if (first.start.isAfter(now)) {
                             // next job is in the future so we need to wait until it is ready, or a new one arrives
-                            newJob.await(Math.max(100L, Duration.between(Instant.now(), jobs.getFirst().start()).toMillis() + 10), TimeUnit.MILLISECONDS);
+                            long delay = Duration.between(now, first.start).toMillis();
+                            newJob.await(delay + 1, TimeUnit.MILLISECONDS);
                         } else {
                             ScheduledRunnable scheduledRunnable = jobs.pollFirst();
                             scheduledRunnable.runnable().run();
