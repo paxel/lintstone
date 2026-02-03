@@ -10,8 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SequentialProcessorImplTest {
@@ -38,9 +37,9 @@ public class SequentialProcessorImplTest {
         processor.unregisterGracefully();
         t.join(1000);
 
-        assertThat(results.size(), is(count));
+        assertThat(results).hasSize(count);
         for (int i = 0; i < count; i++) {
-            assertThat(results.get(i), is(i));
+            assertThat(results.get(i)).isEqualTo(i);
         }
     }
 
@@ -77,7 +76,7 @@ public class SequentialProcessorImplTest {
         processor.unregisterGracefully();
         t.join(1000);
 
-        assertThat(maxActiveThreads.get(), is(1));
+        assertThat(maxActiveThreads.get()).isEqualTo(1);
     }
 
     @Test
@@ -119,7 +118,7 @@ public class SequentialProcessorImplTest {
         adderThread.start();
 
         // Should be blocked
-        assertThat(addBlockedLatch.await(500, TimeUnit.MILLISECONDS), is(false));
+        assertThat(addBlockedLatch.await(500, TimeUnit.MILLISECONDS)).isFalse();
 
         // Unblock first task
         blockLatch.countDown();
@@ -158,6 +157,6 @@ public class SequentialProcessorImplTest {
         block.countDown();
 
         t.join(1000);
-        assertThat(processor.size(), is(0));
+        assertThat(processor.size()).isZero();
     }
 }

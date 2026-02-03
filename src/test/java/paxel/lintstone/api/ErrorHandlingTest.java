@@ -6,9 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ErrorHandlingTest {
 
@@ -36,7 +34,7 @@ public class ErrorHandlingTest {
         actor.tell("msg"); // This should not be processed because actor aborted
 
         boolean received = latch.await(500, TimeUnit.MILLISECONDS);
-        assertThat("Message after failure should NOT have been received", received, is(false));
+        assertThat(received).as("Message after failure should NOT have been received").isFalse();
 
         system.shutDownNow();
     }
@@ -63,7 +61,7 @@ public class ErrorHandlingTest {
         actor.tell("msg"); // This SHOULD be processed
 
         boolean received = latch.await(1, TimeUnit.SECONDS);
-        assertThat("Message after failure SHOULD have been received", received, is(true));
+        assertThat(received).as("Message after failure SHOULD have been received").isTrue();
 
         system.shutDownNow();
     }
@@ -90,10 +88,10 @@ public class ErrorHandlingTest {
         }, ActorSettings.DEFAULT).tell("start");
 
         boolean received = latch.await(1, TimeUnit.SECONDS);
-        assertThat(received, is(true));
-        assertThat(failedMsgRef.get().actorName(), is("failingActor"));
-        assertThat(failedMsgRef.get().message(), is("trigger"));
-        assertThat(failedMsgRef.get().cause(), instanceOf(RuntimeException.class));
+        assertThat(received).isTrue();
+        assertThat(failedMsgRef.get().actorName()).isEqualTo("failingActor");
+        assertThat(failedMsgRef.get().message()).isEqualTo("trigger");
+        assertThat(failedMsgRef.get().cause()).isInstanceOf(RuntimeException.class);
 
         system.shutDownNow();
     }

@@ -9,9 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -33,10 +31,10 @@ public class ExternalAskTest {
         String result = md5.<String>ask(new EndMessage()).get();
 
         // this should be repeatable correct. because the messages are processed in correct order and the ask will be the last one
-        assertThat(result, is("993e7b2144d8c8a5cde9cf36463959e"));
-        assertThat(md5.getQueuedMessagesAndReplies(), is(0));
-        assertThat(md5.getProcessedMessages(), is(1002L)); //1 string 1000 byte 1 ask
-        assertThat(md5.getProcessedReplies(), is(1L)); // processed the ask reply for external call
+        assertThat(result).isEqualTo("993e7b2144d8c8a5cde9cf36463959e");
+        assertThat(md5.getQueuedMessagesAndReplies()).isEqualTo(0);
+        assertThat(md5.getProcessedMessages()).isEqualTo(1002L); //1 string 1000 byte 1 ask
+        assertThat(md5.getProcessedReplies()).isEqualTo(1L); // processed the ask reply for external call
         System.out.println(system);
         system.shutDown();
     }
@@ -55,7 +53,7 @@ public class ExternalAskTest {
         Object result = md5.<Integer>ask(new EndMessage()).get();
 
         // was no integer
-        assertThat(result, is(instanceOf(String.class)));
+        assertThat(result).isInstanceOf(String.class);
     }
 
     @Test
@@ -76,10 +74,10 @@ public class ExternalAskTest {
         latch.await();
 
         // this should be repeatable correct. because the messages are processed in correct order and the ask will be the last one
-        assertThat(result.get(), is("993e7b2144d8c8a5cde9cf36463959e"));
-        assertThat(md5.getQueuedMessagesAndReplies(), is(0));
-        assertThat(md5.getProcessedMessages(), is(1002L)); //1 string 1000 byte 1 ask
-        assertThat(md5.getProcessedReplies(), is(1L)); // processed the ask reply for external call
+        assertThat(result.get()).isEqualTo("993e7b2144d8c8a5cde9cf36463959e");
+        assertThat(md5.getQueuedMessagesAndReplies()).isEqualTo(0);
+        assertThat(md5.getProcessedMessages()).isEqualTo(1002L); //1 string 1000 byte 1 ask
+        assertThat(md5.getProcessedReplies()).isEqualTo(1L); // processed the ask reply for external call
         System.out.println(system);
         system.shutDown();
     }

@@ -1,13 +1,13 @@
 package paxel.lintstone.impl;
 
-import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SimpleSchedulerTest {
 
@@ -24,7 +24,7 @@ class SimpleSchedulerTest {
         CountDownLatch latch = new CountDownLatch(1);
         scheduler.runLater(() -> latch.countDown(), Duration.ofSeconds(1));
         latch.await();
-        assertThat(order, IsIterableContainingInOrder.contains("one", "3", "4", "five"));
+        assertThat(order).containsExactly("one", "3", "4", "five");
     }
 
 }

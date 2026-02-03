@@ -11,8 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -87,11 +86,11 @@ public class FailingTests {
         echoActor.tell("the error log is expected.");
         // this is the correct way to ask for data from outside the actorSystem
         String echo = echoActor.<String>ask("please tell me").get();
-        assertThat(echo, is("echo"));
+        assertThat(echo).isEqualTo("echo");
 
         // the first try should have created a message here,
         // and now it does because we fixed the error propagation
-        assertThat(errorMessage.size(), is(1));
+        assertThat(errorMessage).hasSize(1);
 
         system.shutDownAndWait();
     }

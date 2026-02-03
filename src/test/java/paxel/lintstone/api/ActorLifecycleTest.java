@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ActorLifecycleTest {
@@ -29,7 +28,7 @@ public class ActorLifecycleTest {
         actor.tell("msg2");
         
         boolean unregistered = system.unregisterActor("actor");
-        assertThat(unregistered, is(true));
+        assertThat(unregistered).isTrue();
         
         // After unregister, tell should throw exception
         assertThrows(UnregisteredRecipientException.class, () -> actor.tell("msg3"));
@@ -38,7 +37,7 @@ public class ActorLifecycleTest {
         Thread.sleep(100);
         
         // Queued messages should still be processed
-        assertThat(processCount.get(), is(2));
+        assertThat(processCount.get()).isEqualTo(2);
         
         system.shutDownNow();
     }
@@ -62,8 +61,8 @@ public class ActorLifecycleTest {
         // Wait for processing
         Thread.sleep(100);
         
-        assertThat(unregisteredRef.get(), is(true));
-        assertThat(actor.exists(), is(false));
+        assertThat(unregisteredRef.get()).isTrue();
+        assertThat(actor.exists()).isFalse();
         
         system.shutDownNow();
     }
@@ -99,8 +98,8 @@ public class ActorLifecycleTest {
         
         Thread.sleep(100);
         
-        assertThat(actor1Count.get(), is(1));
-        assertThat(actor2Count.get(), is(1));
+        assertThat(actor1Count.get()).isEqualTo(1);
+        assertThat(actor2Count.get()).isEqualTo(1);
         
         system.shutDownNow();
     }

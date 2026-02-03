@@ -5,8 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import paxel.lintstone.api.actors.AdderActor;
@@ -55,8 +54,8 @@ public class LintStoneSystemTest {
         // wait for the result
         latch.await();
         boolean unregisterActor = system.unregisterActor("sumActor");
-        assertThat(unregisterActor, is(true));
-        assertThat(result, is(4999950000L));
+        assertThat(unregisterActor).isTrue();
+        assertThat(result).isEqualTo(4999950000L);
         system.shutDownAndWait(Duration.ofSeconds(5));
     }
 

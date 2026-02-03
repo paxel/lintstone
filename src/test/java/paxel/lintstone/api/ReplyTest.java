@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -36,11 +35,11 @@ public class ReplyTest {
 
         // wait for the result
         latch.await();
-        assertThat(system.unregisterActor("Alex"), is(true));
-        assertThat(system.unregisterActor("Uta"), is(true));
-        assertThat(system.unregisterActor("floor"), is(true));
+        assertThat(system.unregisterActor("Alex")).isTrue();
+        assertThat(system.unregisterActor("Uta")).isTrue();
+        assertThat(system.unregisterActor("floor")).isTrue();
         //is it really removed?
-        assertThat(system.unregisterActor("floor"), is(false));
+        assertThat(system.unregisterActor("floor")).isFalse();
         system.shutDown();
     }
 

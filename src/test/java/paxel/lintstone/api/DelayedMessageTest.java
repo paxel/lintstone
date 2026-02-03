@@ -7,8 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DelayedMessageTest {
 
@@ -33,10 +32,10 @@ public class DelayedMessageTest {
         }, ActorSettings.DEFAULT).tell("start");
 
         boolean received = latch.await(2, TimeUnit.SECONDS);
-        assertThat(received, is(true));
+        assertThat(received).isTrue();
 
         long delay = receiveTime.get() - startTime;
-        assertThat("Delay should be at least 500ms, was " + delay, delay >= 500, is(true));
+        assertThat(delay).as("Delay should be at least 500ms, was " + delay).isGreaterThanOrEqualTo(500);
 
         system.shutDownNow();
     }
@@ -63,7 +62,7 @@ public class DelayedMessageTest {
         system.unregisterActor("target");
 
         boolean received = latch.await(1, TimeUnit.SECONDS);
-        assertThat("Message should NOT have been received", received, is(false));
+        assertThat(received).as("Message should NOT have been received").isFalse();
 
         system.shutDownNow();
     }

@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MessageAccessTest {
 
@@ -29,7 +28,7 @@ public class MessageAccessTest {
               .inCase(Object.class, (o, ctx) -> matchCount.incrementAndGet())
               .otherwise((o, ctx) -> matchCount.incrementAndGet());
 
-        assertThat("Only the first matching inCase should be executed", matchCount.get(), is(1));
+        assertThat(matchCount.get()).as("Only the first matching inCase should be executed").isEqualTo(1);
     }
 
     @Test
@@ -43,14 +42,14 @@ public class MessageAccessTest {
         access.inCase(Integer.class, (i, ctx) -> {})
               .otherwise((o, ctx) -> otherwiseExecuted.set(true));
 
-        assertThat("otherwise should be executed if no inCase matched", otherwiseExecuted.get(), is(true));
+        assertThat(otherwiseExecuted.get()).as("otherwise should be executed if no inCase matched").isTrue();
 
         otherwiseExecuted.set(false);
         access.reset("test", createMockContext());
         access.inCase(String.class, (s, ctx) -> {})
               .otherwise((o, ctx) -> otherwiseExecuted.set(true));
 
-        assertThat("otherwise should NOT be executed if an inCase matched", otherwiseExecuted.get(), is(false));
+        assertThat(otherwiseExecuted.get()).as("otherwise should NOT be executed if an inCase matched").isFalse();
     }
 
     @Test
@@ -61,7 +60,7 @@ public class MessageAccessTest {
 
         access.inCase(CharSequence.class, (cs, ctx) -> matched.set(true));
 
-        assertThat("Should match superclass/interface", matched.get(), is(true));
+        assertThat(matched.get()).as("Should match superclass/interface").isTrue();
     }
 
     private LintStoneMessageEventContext createMockContext() {

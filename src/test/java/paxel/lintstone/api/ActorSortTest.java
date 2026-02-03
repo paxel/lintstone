@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ActorSortTest {
 
@@ -30,12 +29,10 @@ public class ActorSortTest {
         List<Long> sorted = root.<List<Long>>ask("get").get();
 
         // check that the result is the same (is only true if no duplicates were created)
-        assertThat(sorted.size(), is(number));
+        assertThat(sorted).hasSize(number);
 
         // check that it's sorted
-        for (int i = 0; i < number - 1; i++) {
-            assertThat(String.format("at %d : %d greater than %d", i, sorted.get(i), sorted.get(i + 1)), sorted.get(i) <= sorted.get(i + 1));
-        }
+        assertThat(sorted).isSorted();
 
         // stop system
         system.shutDownNow();
