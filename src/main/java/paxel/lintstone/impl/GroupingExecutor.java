@@ -7,10 +7,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A {@link ProcessorFactory} implementation that uses a virtual thread per task executor.
+ */
 public class GroupingExecutor implements ProcessorFactory {
     private final ExecutorService executorService;
 
 
+    /**
+     * Creates a new GroupingExecutor with a virtual thread per task executor.
+     */
     public GroupingExecutor() {
         // this implementation is completely for virtual Threads
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();

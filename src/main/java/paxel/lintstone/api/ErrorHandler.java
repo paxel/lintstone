@@ -1,5 +1,8 @@
 package paxel.lintstone.api;
 
+/**
+ * Functional interface for handling errors in an actor.
+ */
 @FunctionalInterface
 public interface ErrorHandler {
 

@@ -9,9 +9,18 @@ public class MessageAccess {
     private LintStoneMessageEventContext context;
     private boolean handled;
 
+    /**
+     * Default constructor.
+     */
     public MessageAccess() {
     }
 
+    /**
+     * Resets the message access with a new message and context.
+     *
+     * @param message the message to handle.
+     * @param context the context to use.
+     */
     public void reset(Object message, LintStoneMessageEventContext context) {
         this.message = message;
         this.context = context;

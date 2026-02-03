@@ -23,6 +23,7 @@ public interface LintStoneActorAccessor {
      * @param message        The message to send-
      * @param blockThreshold The number of queued messages that causes the call to block.
      * @throws UnregisteredRecipientException in case the actor does not exist.
+     * @throws InterruptedException           if the thread is interrupted while waiting for backpressure.
      */
     void tellWithBackPressure(Object message, int blockThreshold) throws UnregisteredRecipientException, InterruptedException;
 

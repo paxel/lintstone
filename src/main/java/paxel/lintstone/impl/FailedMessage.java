@@ -4,6 +4,13 @@ import paxel.lintstone.api.LintStoneFailedMessage;
 
 import java.util.Objects;
 
+/**
+ * Implementation of {@link LintStoneFailedMessage}.
+ *
+ * @param message   the failed message.
+ * @param cause     the cause of the failure.
+ * @param actorName the name of the failing actor.
+ */
 public record FailedMessage(Object message, Throwable cause, String actorName) implements LintStoneFailedMessage {
 
     @Override

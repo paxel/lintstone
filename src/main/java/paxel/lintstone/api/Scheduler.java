@@ -2,6 +2,9 @@ package paxel.lintstone.api;
 
 import java.time.Duration;
 
+/**
+ * Interface for scheduling tasks.
+ */
 public interface Scheduler {
 
     /**

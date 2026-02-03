@@ -63,6 +63,7 @@ public interface LintStoneSystem {
      * The actors also accept new messages during shutdown
      *
      * @param timeout the duration to wait
+     * @return {@code true} if all actors have stopped before timeout, {@code false} otherwise.
      * @throws java.lang.InterruptedException in case the Thread is interrupted while shutting down.
      */
     boolean shutDownAndWait(Duration timeout) throws InterruptedException;

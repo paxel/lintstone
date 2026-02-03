@@ -11,8 +11,11 @@ import java.util.concurrent.Executors;
  */
 public class LintStoneSystemFactory {
 
+    private LintStoneSystemFactory() {
+    }
+
     /**
-     * Creates a {@link LintStoneSystem} with the given {@link ExecutorService}.
+     * Creates a {@link LintStoneSystem} with default settings.
      *
      * @return the LintStoneSystem.
      */

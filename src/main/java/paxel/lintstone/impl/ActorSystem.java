@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Default implementation of {@link LintStoneSystem}.
+ */
 public class ActorSystem implements LintStoneSystem {
 
     private final Map<String, Actor> actors = new ConcurrentHashMap<>();
@@ -16,11 +19,20 @@ public class ActorSystem implements LintStoneSystem {
     private final Scheduler scheduler;
     private final ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * Creates a new ActorSystem with default {@link GroupingExecutor} and {@link SimpleScheduler}.
+     */
     public ActorSystem() {
         processorFactory = new GroupingExecutor();
         scheduler = new SimpleScheduler();
     }
 
+    /**
+     * Creates a new ActorSystem with the given processor factory and scheduler.
+     *
+     * @param processorFactory the processor factory to use.
+     * @param scheduler        the scheduler to use.
+     */
     public ActorSystem(ProcessorFactory processorFactory, Scheduler scheduler) {
         this.processorFactory = processorFactory;
         this.scheduler = scheduler;

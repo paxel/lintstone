@@ -13,6 +13,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static paxel.lintstone.impl.SequentialProcessorImpl.RunStatus.*;
 
+/**
+ * Implementation of {@link SequentialProcessor}.
+ */
 public class SequentialProcessorImpl implements SequentialProcessor {
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -27,6 +30,11 @@ public class SequentialProcessorImpl implements SequentialProcessor {
     private final AtomicInteger queueSize = new AtomicInteger(0);
     private final AtomicBoolean endGracefully = new AtomicBoolean();
 
+    /**
+     * Creates a new sequential processor implementation with the given error handler.
+     *
+     * @param errorHandler the error handler.
+     */
     public SequentialProcessorImpl(ErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
@@ -110,6 +118,11 @@ public class SequentialProcessorImpl implements SequentialProcessor {
 
     }
 
+    /**
+     * Gets the runnable that performs the processing.
+     *
+     * @return the processing runnable.
+     */
     public Runnable getRunnable() {
         return this::run;
     }

@@ -18,11 +18,23 @@ public class MessageContext implements LintStoneMessageEventContext {
     private Object message;
     private BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler;
 
+    /**
+     * Creates a new message context.
+     *
+     * @param actorSystem the actor system.
+     * @param self        the actor accessor for this context.
+     */
     public MessageContext(ActorSystem actorSystem, SelfUpdatingActorAccessor self) {
         this.actorSystem = actorSystem;
         this.self = self;
     }
 
+    /**
+     * Resets the context for a new message and reply handler.
+     *
+     * @param message      the message.
+     * @param replyHandler the reply handler.
+     */
     public void reset(Object message, BiConsumer<Object, SelfUpdatingActorAccessor> replyHandler) {
         this.message = message;
         this.replyHandler = replyHandler;

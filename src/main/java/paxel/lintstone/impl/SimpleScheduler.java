@@ -22,6 +22,12 @@ public class SimpleScheduler implements Scheduler, Runnable {
     ReentrantLock lock = new ReentrantLock();
     Condition newJob = lock.newCondition();
 
+    /**
+     * Creates a new simple scheduler.
+     */
+    public SimpleScheduler() {
+    }
+
     @Override
     public void runLater(Runnable runnable, Duration duration) {
         lock.lock();

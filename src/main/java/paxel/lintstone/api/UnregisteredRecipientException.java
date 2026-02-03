@@ -5,6 +5,11 @@ package paxel.lintstone.api;
  */
 public class UnregisteredRecipientException extends RuntimeException {
 
+    /**
+     * Constructs a new exception with the given message.
+     *
+     * @param message the exception message.
+     */
     public UnregisteredRecipientException(String message) {
         super(message);
     }

@@ -4,5 +4,12 @@ package paxel.lintstone.api;
  * The decision of the {@link ErrorHandler} after a caught Exception.
  */
 public enum ErrorHandlerDecision {
-    CONTINUE, ABORT;
+    /**
+     * Continue processing messages.
+     */
+    CONTINUE,
+    /**
+     * Abort processing messages and stop the actor.
+     */
+    ABORT;
 }

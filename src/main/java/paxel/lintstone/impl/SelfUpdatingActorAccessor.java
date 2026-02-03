@@ -55,6 +55,13 @@ public class SelfUpdatingActorAccessor implements LintStoneActorAccessor {
         }
     }
 
+    /**
+     * Internal method to send a message from a specific sender.
+     *
+     * @param message the message to send.
+     * @param sender  the sender of the message.
+     * @throws UnregisteredRecipientException if the actor is not registered.
+     */
     public void send(Object message, SelfUpdatingActorAccessor sender) throws UnregisteredRecipientException {
         tell(message, sender, null);
     }

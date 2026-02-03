@@ -8,6 +8,7 @@ package paxel.lintstone.api;
  * <p>
  * Basically this is our way to make typesafe calls without instanceof switches
  * or if else trees
+ * @param <T> the type of the event value to handle
  */
 @FunctionalInterface
 public interface LintStoneEventHandler<T> {

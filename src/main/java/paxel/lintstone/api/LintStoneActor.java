@@ -1,5 +1,8 @@
 package paxel.lintstone.api;
 
+/**
+ * The interface for a LintStone actor.
+ */
 @FunctionalInterface
 public interface LintStoneActor {
 

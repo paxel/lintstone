@@ -114,6 +114,7 @@ public interface LintStoneMessageEventContext {
      * @param name        The name of the actor.
      * @param factory     The factory.
      * @param initMessage The init message.
+     * @param settings    The actor settings.
      * @return The new or old actor access.
      */
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, Object initMessage, ActorSettings settings);
@@ -124,6 +125,7 @@ public interface LintStoneMessageEventContext {
      *
      * @param name    The name of the actor.
      * @param factory The factory.
+     * @param settings The actor settings.
      * @return The new or old actor access.
      */
     LintStoneActorAccessor registerActor(String name, LintStoneActorFactory factory, ActorSettings settings);
