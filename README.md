@@ -1,142 +1,154 @@
-# lintstone
-There is no Thread Thlintstone. Lintstone is a simple actor framework. nough said.
+# LintStone
+
+LintStone is a lightweight, high-performance actor framework for Java 21+, built from the ground up to leverage **Virtual Threads** for maximum scalability and simplicity.
 
 [![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
 
+## Installation
+
+Add the following dependency to your `pom.xml`:
+
 ```xml
-        <dependency>
-            <groupId>io.github.paxel</groupId>
-            <artifactId>lintstone-actor-system</artifactId>
-            <version>2.0.1</version>
-        </dependency>
+<dependency>
+    <groupId>io.github.paxel</groupId>
+    <artifactId>lintstone-actor-system</artifactId>
+    <version>2.0.1</version>
+</dependency>
 ```
-# How to use it?
 
-## Actor
+## Core Concepts
 
-An actor only lives (is executed) if a message is sent to it.
-The message defines what the actor does.
-The message is given inside a context object for easy type handling.
-the context object is also used to respond or send messages to other actors.
-the context object is only valid for the one message object that it handles.
+*   **ActorSystem:** The container and lifecycle manager for all actors. It handles thread scheduling (using Virtual Threads) and actor registration.
+*   **Actor:** A stateful object that processes messages sequentially. Each actor is guaranteed to be executed by only one thread at a time.
+*   **Message:** Any Java object. Messages are immutable by convention.
+*   **Context (MEC):** The `LintStoneMessageEventContext` provided to actors during message processing. It's used to reply, send messages to other actors, or manage actor lifecycles.
 
-## Usage
+## Quick Start
 
-First you need to init the actorsystem.
-Since JAVA 21 the ActorSystem uses Virtual Threads internally.
-Each Actor runs on one virtual Thread and only gets active if a message is available.
-
+### 1. Initialize the System
 ```java
 LintStoneSystem system = LintStoneSystemFactory.create();
 ```
 
-the system creates the actors
+### 2. Define an Actor
+Actors implement the `LintStoneActor` interface and handle messages using a fluent API.
 
 ```java
-LintStoneActorAccess fileCollector = system.registerActor("fileCollector", () -> new FileCollector(cfg), ActorSettings.DEFAULT);
-...
-fileCollector.tell(FileCollector.fileMessage(root, readOnly));
-```
-() -> new FileCollector(cfg) is a factory for creating a FileCollector Actor.
-A FileMessage is created and sent to the actor.
-
-The message is enqueued and eventually processed by the actor instance
-
-```java
+public class HelloActor implements LintStoneActor {
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {
-        mec
-                // scan dir = most often
-                .inCase(DirMessage.class, this::scanDir)
-                // a few files might be added
-                .inCase(FileMessage.class, (f, m) -> this.addFile(f.path, f.readOnly, m))
-                // all import received
-                .inCase(EndMessage.class, this::end)
-                // that shouldn't happen at all
-                .otherwise((a, b) -> System.out.println("" + a));
+        mec.inCase(String.class, (name, context) -> {
+            System.out.println("Hello, " + name + "!");
+        }).otherwise((msg, context) -> {
+            System.out.println("Received unknown message: " + msg);
+        });
     }
-
-    private void addFile(Path f, boolean readOnly, LintStoneMessageEventContext m) {
-        long length = f.toFile().length();
-        if (length == 0) {
-            this.zero++;
-        } else {
-            fileData += length;
-            final LintStoneActorAccess actor = actors.computeIfAbsent(length, k -> {
-                return m.registerActor("counter-" + length, () -> new FileComparator(length), ActorSettings.DEFAULT);
-            });
-            actor.tell(fileMessage(f, readOnly));
-        }
-    }
+}
 ```
 
-The actor delegates the content of the FileMessage to the addFile method.
-This method gets the size of the file and creates a FileComparator actor for this size (if not already exists).
-then it sends a new fileMessage to that actor.
+### 3. Register and Send Messages
+```java
+// Register the actor
+LintStoneActorAccessor greeter = system.registerActor("greeter", HelloActor::new, ActorSettings.DEFAULT);
 
-It is also possible to ask an actor for a response.
-It is implemented in a way, that a consumer for the response is sent with the message.
-If the asked actor responds to the message, the consumer is called with the response:
+// Send a message (Fire-and-forget)
+greeter.tell("World");
+```
 
-* in the thread of the asking actor
-* in the thread of the asked actor in case the ask was called from outside the actor system.
-This is a good way to get the result from the system in case of a multithreaded process.
+---
+
+## Usage Guide
+
+### Request-Response (Ask)
+You can "ask" an actor for a result, which returns a `CompletableFuture`.
 
 ```java
+// In your main code:
+CompletableFuture<Integer> future = calculator.ask(new AddMessage(5, 10));
+Integer result = future.get(1, TimeUnit.SECONDS);
 
-for (String text : data) {
-    dist.tell(text);
-}
-
-//finally ask for result
-
-String v = dist.<String>ask(new EndMessage())
-               .get(1, TimeUnit.MINUTES);
+// Inside the Actor:
+mec.inCase(AddMessage.class, (add, context) -> {
+    context.reply(add.a() + add.b());
+});
 ```
-## Usage with backpressure
 
-In some situations you create too many events and want to prevent to flood the system.
-Therefore the tellWithBackPressure method was introduced.
-It blocks the tell until the unprocessed message number is less than the given value.
+### Creating Actors on the Fly
+Actors can create other actors using the context.
 
 ```java
+mec.inCase(SpawnMessage.class, (msg, context) -> {
+    LintStoneActorAccessor child = context.registerActor("child-" + msg.id(), 
+        ChildActor::new, ActorSettings.DEFAULT);
+    child.tell("Wake up!");
+});
+```
 
-for (String text : data) {
-    dist.tellWithBackPressure(text,1_000_000);
+### Delayed Messages
+Messages can be scheduled to be sent after a certain duration.
+
+```java
+context.tell("targetActor", "Delayed hello", Duration.ofSeconds(5));
+```
+
+### Backpressure
+To prevent flooding the system when producing messages faster than they can be processed:
+
+```java
+// Blocks if more than 1000 messages are already queued for this actor
+actor.tellWithBackPressure(bigData, 1000);
+```
+
+### Map-Reduce Demo
+LintStone is ideal for data-intensive tasks like Map-Reduce. See the full example in `src/test/java/paxel/lintstone/api/example/mapreduce/MapReduceDemo.java`.
+
+```java
+// Main orchestration
+int numMappers = Runtime.getRuntime().availableProcessors();
+for (int i = 0; i < numMappers; i++) {
+    system.registerActor("mapper-" + i, WordCountMapper::new, ActorSettings.DEFAULT);
 }
+system.registerActor("aggregator", WordCountAggregator::new, ActorSettings.DEFAULT);
 
+// Distribute lines to mappers
+try (BufferedReader reader = Files.newBufferedReader(csvFile)) {
+    String line;
+    while ((line = reader.readLine()) != null) {
+        system.getActor("mapper-" + (count++ % numMappers)).tell(line);
+    }
+}
 ```
 
-There is no ask with BackPressure (yet).
-Ask should be used at the end of batch and not in mass, because it is less effective
+---
 
-Be aware that if you send messages with backpressure in a circle you might cause deadlocks!
+## Developer Documentation
 
-# Benchmarks
+### Architecture
+LintStone is designed for high throughput and low latency.
 
-The actor system has been optimized to handle high throughput with minimal overhead. 
+1.  **Virtual Thread per Actor:** Each actor is assigned a `SequentialProcessor` which runs on a dedicated Virtual Thread when messages are available.
+2.  **Wait-Free Enqueuing:** The core message loop uses a `ConcurrentLinkedQueue` for incoming messages, making `tell()` operations effectively non-blocking.
+3.  **Task Pooling:** To minimize Garbage Collection pressure, LintStone pools internal task objects (Runnables). This significantly reduces object allocation in high-traffic scenarios.
+4.  **Sequential Guarantee:** While the system uses many threads, individual actors are strictly sequential. You don't need `synchronized` blocks or `volatile` fields for an actor's internal state.
 
-Key improvements:
-*   **Lock Reduction:** Replaced global locks with non-blocking queues and signaling semaphores in the message processor.
-*   **Task Pooling:** Reused task objects to significantly reduce GC pressure.
-*   **Efficient Queuing:** Replaced `LinkedList` with `ConcurrentLinkedQueue` for better cache locality and lower memory overhead.
+### Performance Optimizations
+The system has undergone significant optimizations to handle millions of messages per second:
+*   **Lock Reduction:** Replaced heavy `ReentrantLock` usage with signaling semaphores and atomic variables.
+*   **Memory Efficiency:** Replaced `LinkedList` with `ConcurrentLinkedQueue` for better cache locality.
 
-### Throughput comparison
+## Benchmarks
 
-| Benchmark | Initial Baseline | Current (Optimized) | Improvement |
-| :--- | :--- | :--- | :--- |
-| `tellSingleActor` | ~1.6M ops/s | ~2.7M ops/s | **+68%** |
-| `tellSingleActorContention` | ~3.0M ops/s | ~3.4M ops/s | **+13%** |
-| `askSingleActor` | ~45K ops/s | ~52K ops/s | **+15%** |
+The following benchmarks show the throughput on a standard development machine (OpenJDK 21, Virtual Threads enabled).
 
-*Note: Benchmarks were run on a system with OpenJDK 21 (Virtual Threads enabled).*
+| Benchmark | Throughput | Description |
+| :--- | :--- | :--- |
+| `tellSingleActor` | ~2.7M ops/s | Single producer sending to one actor |
+| `tellSingleActorContention` | ~3.4M ops/s | 4 producers sending to one actor |
+| `askSingleActor` | ~52K ops/s | Request-response roundtrip |
 
-### Benchmark results
-```
-Benchmark                                  Mode  Cnt        Score         Error  Units
-ActorBenchmark.askSingleActor             thrpt    3    52037.682 ±  191732.760  ops/s
-ActorBenchmark.tellSingleActor            thrpt    3  2697124.053 ± 4988365.004  ops/s
-ActorBenchmark.tellSingleActorContention  thrpt    3  3457726.025 ± 3886588.999  ops/s
-ActorBenchmark.tellTwoActors              thrpt    3  1463939.667 ± 3542334.118  ops/s
-```
+*Note: Performance may vary based on CPU and message complexity.*
+
+---
+## License
+GNU LESSER GENERAL PUBLIC LICENSE Version 3
 

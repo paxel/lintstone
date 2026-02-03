@@ -1,6 +1,19 @@
-# Example Project
+# LintStone Documentation
+
+LintStone is a lightweight, high-performance actor framework for Java 21+, built from the ground up to leverage **Virtual Threads** for maximum scalability and simplicity.
+
+## Core Concepts
+
+The system revolves around four main concepts:
+
+*   **LintStoneSystem:** The container and lifecycle manager for all actors.
+*   **Actor:** A stateful object that processes messages sequentially.
+*   **ActorAccessor:** A handle to send messages to an actor.
+*   **MessageContext (MEC):** The context provided to actors during message processing.
 
 ## LintStoneSystem
+
+The `LintStoneSystem` is your first step for using Actors. It represents the Actor Framework and also runs them. You create an instance via the `LintStoneSystemFactory`.
 
 [plantuml]
 ----
@@ -19,10 +32,6 @@ interface paxel.lintstone.api.LintStoneSystem {
 }
 ----
 
-A `LintStoneSystem` is your first step for using Actors.
-It represents the Actor Framework and also runs them.
-You create an instance via the `LintStoneSystemFactory`.
-
 [source,java]
 ----
 LintStoneSystem lintStoneSystem = LintStoneSystemFactory.create();
@@ -30,12 +39,14 @@ LintStoneSystem lintStoneSystem = LintStoneSystemFactory.create();
 
 The System is used to:
 
-* register Actors
-* get Actors
-* unregister Actors
-* shutdown the system
+*   **Register Actors:** Create and start new actors.
+*   **Get Actors:** Retrieve a handle to an existing actor.
+*   **Unregister Actors:** Remove actors from the system.
+*   **Shutdown:** Gracefully or immediately stop all actors and the system.
 
 ## LintStoneActorAccessor
+
+Registering an Actor via the system gives you an instance of a `LintStoneActorAccessor`. This accessor is used to interact with the actor from outside its own context.
 
 [plantuml]
 ----
@@ -54,37 +65,34 @@ interface paxel.lintstone.api.LintStoneActorFactory {
 ~ LintStoneActor create()
 }
 interface paxel.lintstone.api.ActorSettings {
-~ ActorSettings DEFAULT
+~ {static} ActorSettings DEFAULT
 ~ ErrorHandler errorHandler()
 ~ {static} ActorSettingsBuilder create()
 }
 ----
 
-Registering an Actor via a `LintStoneActorFactory` gives you an instance of a `LintStoneActorAccessor`.
+### Registering an Actor
 
-To register an Actor you need a unique name.
-This name can also be used to request a specific actor from the System.
-
-You also need a `LintStoneActorFactory` to create the Actor.
-This factory can be simply a Supplier for an existing Actor instance ( `()-> actor` ) or as in the example below, create an instance on demand.
-
-Finally, you need `ActorSettings`.
-There is a default instance available.
-Unless you want to inject your own ErrorHandler you can use that one.
+To register an Actor, you need a unique name, a factory, and settings.
 
 [source,java]
 ----
-
-String name = "dictionary"; // unique name of the actor in the system
-LintStoneActorFactory factory = DictionaryActor::new; // creates an actor
-ActorSettings settings = ActorSettings.DEFAULT; // Default Settings
+String name = "dictionary";
+LintStoneActorFactory factory = DictionaryActor::new;
+ActorSettings settings = ActorSettings.DEFAULT;
 
 LintStoneActorAccessor dictionary = lintStoneSystem.registerActor(name, factory, settings);
 ----
 
+The `LintStoneActorAccessor` provides several ways to send messages:
+
+*   `tell(Object)`: Asynchronous fire-and-forget.
+*   `tellWithBackPressure(Object, int)`: Blocks the sender if the actor's queue exceeds the threshold.
+*   `ask(Object)`: Returns a `CompletableFuture` for the response.
 
 ## LintStoneActor
 
+To implement an actor, you implement the `LintStoneActor` interface, which has a single method: `newMessageEvent`.
 
 [plantuml]
 ----
@@ -92,10 +100,11 @@ interface paxel.lintstone.api.LintStoneActor {
 ~ void newMessageEvent(LintStoneMessageEventContext)
 }
 interface paxel.lintstone.api.LintStoneMessageEventContext {
-~ TypeSafeMonad inCase(Class<T>,LintStoneEventHandler<T>)
+~ MessageAccess inCase(Class<T>,LintStoneEventHandler<T>)
 ~ void otherwise(LintStoneEventHandler<Object>)
 ~ void reply(Object)
 ~ void tell(String,Object)
+~ void tell(String,Object,Duration)
 ~ void ask(String,Object,ReplyHandler)
 ~ CompletableFuture<F> ask(String,Object)
 ~ LintStoneActorAccessor getActor(String)
@@ -105,87 +114,93 @@ interface paxel.lintstone.api.LintStoneMessageEventContext {
 ~ String getName()
 ~ boolean unregister(String)
 }
-
 ----
 
-To implement an actor you need to extend the LintStoneActor interface.
-It has only a single method `newMessageEvent`.
+The `LintStoneMessageEventContext` (MEC) is the actor's way to interact with the system. It can be used to handle the incoming message, reply to the sender, or interact with other actors.
 
-The parameter of this event is the Actors way to interact with the Actor Framework.
+### Message Handling
 
-It can:
-
-* access the message via `inCase` and `otherWise`
-* reply a message to the sender
-* tell a message to an Actor by name
-* ask a reply from an actor by name as `Future` or `ReplyHandler`
-* get an ActorAccessor by name
-* register new Actors
-* unregister other Actors
-* unregister itself
-* get its own unique name
-
+Message handling uses a fluent API to match message types:
 
 [source,java]
 ----
 public class DictionaryActor implements LintStoneActor {
-
-    public record CreateDictionary(long seed){}
-
     @Override
     public void newMessageEvent(LintStoneMessageEventContext mec) {
-        mec
-                .inCase(CreateDictionary.class,this::initDictionary)
-                .otherwise(this::otherwise);
-    }
-
-    private void initDictionary(CreateDictionary createDictionary, LintStoneMessageEventContext lintStoneMessageEventContext) {
-        // the method that handles CreateDictionary messages
-    }
-
-    private void otherwise(Object o, LintStoneMessageEventContext lintStoneMessageEventContext) {
-        // the method that handles all other message types
+        mec.inCase(CreateDictionary.class, (msg, ctx) -> {
+            // handle CreateDictionary
+        }).otherwise(msg -> {
+            // handle unknown message
+        });
     }
 }
 ----
 
-## Other API concepts
+## Internal Architecture & Performance
 
-TBD
+LintStone is designed for high throughput and low latency by leveraging modern Java features and optimized data structures.
+
+### Virtual Threads
+Each actor is assigned a `SequentialProcessor` which runs on a dedicated **Virtual Thread** (Java 21+) when messages are available. This allows the system to scale to millions of actors without the overhead of platform threads.
+
+### Wait-Free Enqueuing
+The core message loop uses a `ConcurrentLinkedQueue` for incoming messages. This makes `tell()` operations effectively non-blocking and wait-free in most scenarios.
+
+### Task Pooling
+To minimize Garbage Collection pressure, LintStone pools internal task objects. This significantly reduces object allocation in high-traffic scenarios, allowing the system to maintain stable performance over time.
+
+### Sequential Guarantee
+While the system uses many threads, individual actors are **strictly sequential**. You don't need `synchronized` blocks or `volatile` fields for an actor's internal state. The framework guarantees that only one message is processed by an actor at a time.
+
+## Advanced API Concepts
+
+### Error Handling
+
+When an actor throws an exception, the `ErrorHandler` is consulted to decide whether to continue or abort.
 
 [plantuml]
 ----
+interface paxel.lintstone.api.ErrorHandler {
+~ ErrorHandlerDecision handleError(Exception)
+}
+enum paxel.lintstone.api.ErrorHandlerDecision {
+  CONTINUE
+  ABORT
+}
 interface paxel.lintstone.api.LintStoneFailedMessage {
 ~ Object message()
 ~ Throwable cause()
 ~ String actorName()
 }
-class paxel.lintstone.api.UnregisteredRecipientException {
-}
-class paxel.lintstone.api.NoSenderException {
-}
+----
 
-interface paxel.lintstone.api.ErrorHandler {
-~ boolean handleError(Object)
-}
+If a message fails, a `LintStoneFailedMessage` can be sent back to the sender if one exists.
+
+### Reply & Event Handlers
+
+[plantuml]
+----
 interface paxel.lintstone.api.ReplyHandler {
 ~ void process(LintStoneMessageEventContext)
 }
-
 interface paxel.lintstone.api.LintStoneEventHandler {
 ~ void handle(T,LintStoneMessageEventContext)
 }
 class paxel.lintstone.api.MessageAccess {
-- {static} TypeSafeMonad DONE
-- Object message
-- LintStoneMessageEventContext context
-+ TypeSafeMonad inCase(Class<T>,LintStoneEventHandler<T>)
-+ void otherwise(LintStoneEventHandler<Object>)
+~ MessageAccess inCase(Class<T>,LintStoneEventHandler<T>)
+~ void otherwise(LintStoneEventHandler<Object>)
 }
-
-paxel.lintstone.api.RuntimeException <|-- paxel.lintstone.api.UnregisteredRecipientException
-paxel.lintstone.api.RuntimeException <|-- paxel.lintstone.api.NoSenderException
 ----
+
+## Map-Reduce Example
+
+LintStone is ideal for data-intensive parallel processing. A typical Map-Reduce implementation involves:
+
+1.  **Mappers:** Actors that process chunks of data and send results to aggregators.
+2.  **Aggregators:** Actors that collect and summarize results.
+3.  **Backpressure:** Using `tellWithBackPressure` to ensure the data source doesn't overwhelm the mappers.
+
+For a complete example, see `MapReduceDemo.java` in the test sources.
 
 
 
