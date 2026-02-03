@@ -106,6 +106,7 @@ class Actor {
                 } else {
                     LOG.log(Level.SEVERE, "While processing " + message + " on " + name + ":", e);
                 }
+                throw e;
             } finally {
                 taskPool.offer(this);
             }
@@ -182,6 +183,7 @@ class Actor {
                 replyHandler.process(mec);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "While processing runnable on " + name + ":", e);
+                throw e;
             } finally {
                 replyTaskPool.offer(this);
             }

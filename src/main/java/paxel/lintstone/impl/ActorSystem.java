@@ -24,7 +24,9 @@ public class ActorSystem implements LintStoneSystem {
      */
     public ActorSystem() {
         processorFactory = new GroupingExecutor();
-        scheduler = new SimpleScheduler();
+        SimpleScheduler simpleScheduler = new SimpleScheduler();
+        Thread.ofVirtual().start(simpleScheduler);
+        scheduler = simpleScheduler;
     }
 
     /**
